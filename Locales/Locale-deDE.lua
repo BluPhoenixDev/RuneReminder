@@ -247,3 +247,4 @@ L["Settings reset to default."] = true
 L["Glow Opacity"] = true
 L["Glow Opacity: "] = true
 L["Invalid Set Name"] = true
+L["Notification Options"] = true

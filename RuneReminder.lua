@@ -2367,7 +2367,7 @@ local function CreateOptionsPanel()
 	-- Rune Reminder Options (Label)
 	local optionsLabel = scrollChild:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
 	optionsLabel:SetPoint("TOPLEFT", 16, yOffset)
-	optionsLabel:SetText("Notification Options")
+	optionsLabel:SetText(L["Notification Options"])
 
 	-- Next row starts after the label
 	yOffset = yOffset - 20
@@ -2399,6 +2399,7 @@ local function CreateOptionsPanel()
 	runeTextureLabel:SetText(L["Rune Texture:"])
 	local runeTextureDropdown = CreateFrame("Frame", "RuneReminderRuneTextureDropdown", scrollChild, "UIDropDownMenuTemplate")
 	runeTextureDropdown:SetPoint("TOPLEFT", runeTextureLabel, "RIGHT", 0, 12)  
+	UIDropDownMenu_SetWidth(runeTextureDropdown, 150)
 
 	-- Left Column
 	local displayRunesCheckbox = CreateCheckbox("displayRunes", "left", yOffset - 30, L["Display Runes Widget"], L["Toggle the display of the Runes Widget"])
