@@ -14,12 +14,13 @@ local currentProfile = nil
 local CreateRuneButton, CreateOrUpdateRuneSelectionButtons, RefreshRuneSelectionButtons, toggleKeepOpen, UpdateButtonBehaviors, ApplyRuneSet, LoadRuneSet, UpdateRuneSetsButtonState, SaveRuneSet, ResetAllButtons, InitializeRRSettings
 local Masque, MSQ_Version = LibStub("Masque", true)
 local group
+local L = LibStub("AceLocale-3.0"):GetLocale("RuneReminder", false)
 
 
 -- Define frame 
 local frame = CreateFrame("Frame", "RR_DragHandle", UIParent, "BackdropTemplate")
 frame:SetParent(UIParent)
-frame.Name = "RuneReminder"
+frame.Name = L["Rune Reminder"]
 
 
 local text = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
@@ -119,17 +120,18 @@ local defaults = {
 }
 local validSlots = {
     [10] = "Hands",
-    [5] = "Chest",
-    [7] = "Legs"
+	[5] = "Chest",
+	[7] = "Legs"
 }
 
 local allSlots = {
 	[1] = "Head",
 	[2] = "Neck",
 	[3] = "Shoulder",
-    [5] = "Chest",
+	[4] = "Shirt",
+	[5] = "Chest",
 	[6] = "Waist",
-    [7] = "Legs",
+	[7] = "Legs",
 	[8] = "Feet",
 	[9] = "Wrist",
 	[10] = "Hands"
@@ -221,7 +223,13 @@ local function initFrame(reset)
 				local lockAction = RuneReminder_CurrentSettings.anchorLocked and "unlock" or "lock"
 				local visibilityAction = RuneReminder_CurrentSettings.anchorVisible and "hide" or "show"
 
-				GameTooltip:SetText("|cff2da3cfRune Reminder|r|cffabdaeb\nLeft |rClick + |cffabdaebDrag|r to |cffabdaebmove|r.\n|cffabdaebLeft |rClick + |cffabdaebCtrl|r to |cffabdaeblock/unlock|r.\n|cffabdaebLeft |rClick + |cffabdaebShift|r to |cffabdaebopen Options|r.\n|cffabdaebRight |rClick to |cffabdaebhide the anchor|r.", 1, 1, 1, 1, true)
+				GameTooltip:SetText(string.format("|cff2da3cf[%s]|r|cffabdaeb\n%s %s %s.\n%s %s %s %s.\n%s %s %s %s.\n%s %s %s.",
+                                    L["Rune Reminder"],
+                                    L["Left"], L["Click"], L["Drag"], 
+                                    L["Left"], L["Click"], L["Ctrl"], L["to"], 
+                                    L["Left"], L["Click"], L["Shift"], L["to"], 
+                                    L["Right"], L["Click"], L["hide the anchor"]), 1, 1, 1, 1, true)
+
 				GameTooltip:Show()
 			end)
 			frame:SetScript("OnLeave", function(self)
@@ -497,20 +505,20 @@ function ShowSlotButtonTooltip(button)
 				GameTooltip:SetEngravingRune(button.runeInfo.skillLineAbilityID) -- Show detailed tooltip for the rune
 			else
 				GameTooltip:ClearLines()
-			   local runeName = button.runeInfo and button.runeInfo.name or "No Rune"
+			   local runeName = button.runeInfo and button.runeInfo.name or L["No Rune"]
 				GameTooltip:AddLine(runeName, 0.67, 0.85, 0.92) 
-			   GameTooltip:AddLine(button.slotName .. (button.runeInfo and " Engraved" or ": No Rune"), 0, 0.55, 0)
+			   GameTooltip:AddLine(button.slotName .. (button.runeInfo and L[" Engraved"] or L[": No Rune"]), 0, 0.55, 0)
 		   end
         end
     elseif RuneReminder_CurrentSettings.simpleTooltips then
 		GameTooltip:ClearLines()
-		local runeName = button.runeInfo and button.runeInfo.name or "No Rune"
+		local runeName = button.runeInfo and button.runeInfo.name or L["No Rune"]
 		GameTooltip:AddLine(runeName, 0.67, 0.85, 0.92) 
-		GameTooltip:AddLine(button.slotName .. (button.runeInfo and " Engraved" or " Not Engraved"), 0, 0.55, 0)
+		GameTooltip:AddLine(button.slotName .. (button.runeInfo and L[" Engraved"] or L[" Not Engraved"]), 0, 0.55, 0)
 	else 
         -- Fallback for no runeInfo scenario
         GameTooltip:ClearLines()
-        GameTooltip:AddLine(button.slotName..": No Rune Engraved")
+        GameTooltip:AddLine(button.slotName..L[": No Rune Engraved"])
     end
     GameTooltip:Show()
 end
@@ -524,9 +532,9 @@ function ShowRuneButtonTooltip(button)
         GameTooltip:ClearLines() -- Clear existing lines
         GameTooltip:AddLine(button.runeInfo.name, 0.67, 0.85, 0.92)
 		if learnedRunes[button.runeInfo.skillLineAbilityID] then
-			GameTooltip:AddLine("Click to Engrave " .. button.slotName, 0, 1, 0)
+			GameTooltip:AddLine(L["Click to Engrave "] .. button.slotName, 0, 1, 0)
 		else
-			GameTooltip:AddLine("Not Collected", 1.0, 0.5, 0.0)
+			GameTooltip:AddLine(L["Not Collected"], 1.0, 0.5, 0.0)
 		end
     end
     GameTooltip:Show()
@@ -582,17 +590,17 @@ function CreateRuneButton(slotID, rune, index)
 		elseif IsShiftKeyDown() and mouseButton == "LeftButton" then
 			ToggleOptionsPanel()
 	   elseif UnitIsDeadOrGhost("player") then
-			ShowRuneWarning("Runes cannot be applied while dead") 
+			ShowRuneWarning(L["Runes cannot be applied while dead"]) 
 		elseif InCombatLockdown() then
-			ShowRuneWarning("Runes cannot be applied during combat")
+			ShowRuneWarning(L["Runes cannot be applied during combat"])
 		elseif IsPlayerMoving() or IsFlying() or IsFalling() then
-			ShowRuneWarning("Runes cannot be applied while moving")
+			ShowRuneWarning(L["Runes cannot be applied while moving"])
 		elseif IsMounted() then
-			ShowRuneWarning("Runes cannot be applied while mounted")
+			ShowRuneWarning(L["Runes cannot be applied while mounted"])
 		elseif spell then
-			ShowRuneWarning("Runes cannot be applied while casting")
+			ShowRuneWarning(L["Runes cannot be applied while casting"])
 		elseif not learnedRunes[rune.skillLineAbilityID] then
-			ShowRuneWarning("Rune must be collected first")
+			ShowRuneWarning(L["Rune must be collected first"])
 		else
 			if not RuneReminder_CurrentSettings.keepOpen then
 				HideRuneSelectionButtons(slotID)
@@ -610,7 +618,7 @@ function CreateRuneButton(slotID, rune, index)
 				GameTooltip:ClearLines()
 				GameTooltip:AddLine(rune.name, 0.67, 0.85, 0.92) -- Rune name in custom color
 				if learnedRunes[rune.skillLineAbilityID] then
-					GameTooltip:AddLine("Click to Engrave " .. slotName, 0, 1, 0) -- Instructions in green
+					GameTooltip:AddLine(L["Click to Engrave "] .. slotName, 0, 1, 0) -- Instructions in green
 				end
 			end
         GameTooltip:Show()
@@ -866,7 +874,7 @@ local hideDropdownTimer
 
 local function CreateMenuItem(setName, setDetails)
     local info = UIDropDownMenu_CreateInfo()
-    info.text = "Load Set: "..setName
+    info.text = L["Load Set: "]..setName
     info.notCheckable = true
     info.func = function(_, setName) UpdateRuneSetsButtonState(setName, RuneReminder_CurrentSettings.setEngraveOnLoad) end
     info.arg1 = setName
@@ -881,9 +889,9 @@ local function CreateMenuItem(setName, setDetails)
 		local runeDetails = GetRuneDetailsFromID(runeID)
 		local slotName = GetSlotName(slotID)
 		local currentRune = currentRunes[slotID]
-		local runeName = runeDetails and "|cffabdaeb"..runeDetails.name or "Unknown"
+		local runeName = runeDetails and "|cffabdaeb"..runeDetails.name or L["Unknown"]
 		if currentRune and currentRune.skillLineAbilityID == runeID then
-			runeName = runeName .. " |cff008500(active)|r"
+			runeName = string.format("%s |cff008500(%s)|r", runeName, L["active"])
 			equipped = equipped + 1
 		else
 			different = true
@@ -893,9 +901,10 @@ local function CreateMenuItem(setName, setDetails)
 	end
 
 	if different then
-		info.tooltipTitle = "Rune Set: "..setName.." ("..equipped.."/"..total.." active)"
+		info.tooltipTitle = L["Rune Set"] .. ": " .. setName .. " (" .. equipped .. "/" .. total .. " " .. L["active"] .. ")"
 	else
-		info.tooltipTitle = "Rune Set: "..setName.." |cff007500("..equipped.."/"..total.." active)"
+		info.tooltipTitle = L["Rune Set"] .. ": " .. setName .. " |cff007500(" .. equipped .. "/" .. total .. " " .. L["active"] .. ")"
+
 	end
 	info.tooltipText = toolTip
 
@@ -909,7 +918,7 @@ local function DisplayRuneSetsMenu()
         info.notCheckable = true
 
         -- Cancel button
-        info.text = "Cancel"
+        info.text = L["Cancel"]
         info.func = HideDropdownMenu
         UIDropDownMenu_AddButton(info)
 
@@ -920,7 +929,7 @@ local function DisplayRuneSetsMenu()
         end
 
         -- Save runes as new set
-        info.text = "Save Current Runes as Set"
+        info.text = L["Save Current Runes as Set"]
         info.func = SaveCurrentRuneSet
         UIDropDownMenu_AddButton(info)
     end, "MENU")
@@ -940,12 +949,12 @@ local function DisplayRuneSetsDelMenu()
         local info = UIDropDownMenu_CreateInfo()
         info.notCheckable = true
 
-		info.text = "Cancel"
+		info.text = L["Cancel"]
         info.func = HideDropdownMenu
         UIDropDownMenu_AddButton(info)
 
         for setName, _ in pairs(runeSets) do
-            info.text = "Delete Set: "..setName
+            info.text = L["Delete Set: "]..setName
             info.func = function(_, setName) PrepDeleteRuneSet(setName) end
             info.arg1 = setName
             UIDropDownMenu_AddButton(info)
@@ -994,10 +1003,11 @@ local function CreateRuneSetsButton()
 		
 		 GameTooltip:SetOwner(button, RuneReminder_CurrentSettings.tooltipAnchor)
 				GameTooltip:ClearLines()
-				GameTooltip:AddLine("|cff2da3cfRune Reminder|r Rune Sets\n",1,1,1)
-				GameTooltip:AddLine("|cffabdaebLeft |rClick to |cffabdaebSave|r or |cffabdaebLoad Rune Sets|r\n|cffabdaebAlt|r Click to |cffabdaebDelete Rune Sets",1,1,1) 
+				GameTooltip:AddLine(string.format("|cff2da3cf%s|r %s\n", L["Rune Reminder"], L["Rune Sets"]), 1, 1, 1)
+				GameTooltip:AddLine(string.format("|cffabdaeb%s |r%s |cffabdaeb%s |r%s |cffabdaeb%s", L["Left Click"], L["to Save"], L["or Alt"], L["to Delete"], L["Rune Sets"]), 1, 1, 1)
+
 				if RuneReminder_CurrentSettings.toggleSets then
-					GameTooltip:AddLine("|cffabdaebRight|r Click to |cffabdaebToggle Rune Slots",1,1,1) 
+					GameTooltip:AddLine(string.format("|cffabdaeb%s|r %s |cffabdaeb%s", L["Right Click"], L["to Toggle"], L["Rune Slots"]), 1, 1, 1)
 				end
 			GameTooltip:Show()
 		end)
@@ -1103,15 +1113,15 @@ function UpdateRuneSetsButtonState(set, beginImmediately)
 					elseif mouseButton == "LeftButton" then
 					
 						if UnitIsDeadOrGhost("player") then
-							ShowRuneWarning("Runes cannot be applied while dead") 
+							ShowRuneWarning(L["Runes cannot be applied while dead"])
 						elseif InCombatLockdown() then
-							ShowRuneWarning("Runes cannot be applied during combat")
+							ShowRuneWarning(L["Runes cannot be applied during combat"])
 						elseif IsPlayerMoving() or IsFlying() or IsFalling() then
-							ShowRuneWarning("Runes cannot be applied while moving")
+							ShowRuneWarning(L["Runes cannot be applied while moving"])
 						elseif IsMounted() then
-							ShowRuneWarning("Runes cannot be applied while mounted")
+							ShowRuneWarning(L["Runes cannot be applied while mounted"])
 						elseif spell then
-							ShowRuneWarning("Runes cannot be applied while casting")
+							ShowRuneWarning(L["Runes cannot be applied while casting"])
 						else
 							ApplyRuneSet(setToLoad, setToApply)
 						end
@@ -1124,7 +1134,8 @@ function UpdateRuneSetsButtonState(set, beginImmediately)
 					RuneSetsButton:SetScript("OnEnter", function()
 					 GameTooltip:SetOwner(RuneSetsButton, RuneReminder_CurrentSettings.tooltipAnchor)
 							GameTooltip:ClearLines() -- Clear existing lines
-							GameTooltip:AddLine("|cff2da3cfRune Reminder|r\nRune Set: "..setToApply.."\nApply |cffabdaeb"..runeDetails.name.."|r to "..slotName, 1,1,1) -- Rune name in custom color
+							GameTooltip:AddLine(string.format("|cff2da3cf%s|r\n%s: %s\n%s |cffabdaeb%s|r %s %s", L["Rune Reminder"], L["Rune Set"], setToApply, L["Apply"], runeDetails.name, L["to"], slotName), 1, 1, 1)
+ -- Rune name in custom color
 						GameTooltip:Show()
 					end)
 					RuneSetsButton:SetScript("OnLeave", function()
@@ -1138,7 +1149,8 @@ function UpdateRuneSetsButtonState(set, beginImmediately)
 			elseif not set then
 				-- Revert to default icon when no runes are left to apply
 				--RuneSetsButton.texture:SetTexture(RuneReminder_CurrentSettings.runeSetsIcon)
-				print("|cff2da3cf[Rune Reminder]|r Rune Set |cffabdaeb"..setToApply.."|r is now active.")
+				print(string.format("|cff2da3cf[%s]|r %s |cffabdaeb%s|r %s.", L["Rune Reminder"], L["Rune Set"], setToApply, L["is now active"]))
+
 				setToApply = nil -- Clear the currently applying set
 					if RuneSetsButton then
 						RuneSetsButton:SetScript("OnMouseUp", function(self, mouseButton)
@@ -1174,8 +1186,8 @@ function UpdateRuneSetsButtonState(set, beginImmediately)
 					ActionButton_HideOverlayGlow(RuneSetsButton)
 				end
 			else 
-				ShowRuneWarning("Rune Set "..setToApply.." is already active.", sound)
-				print("|cff2da3cf[Rune Reminder]|r Rune Set |cffabdaeb"..setToApply.."|r is already active.")
+				ShowRuneWarning(string.format("%s %s %s.", L["Rune Set"], setToApply, L["is already active"]), sound)
+				print(string.format("|cff2da3cf[%s]|r %s |cffabdaeb%s|r %s.", L["Rune Reminder"], L["Rune Set"], setToApply, L["is already active"]))
 				setToApply = nil -- Clear the currently applying set
 				ActionButton_HideOverlayGlow(RuneSetsButton)
 			end
@@ -1183,7 +1195,7 @@ function UpdateRuneSetsButtonState(set, beginImmediately)
 			-- Default state
 			--RuneSetsButton.texture:SetTexture("Interface/Icons/INV_MISC_RUNE_05")
 			RuneSetsButton:SetScript("OnMouseUp", DisplayRuneSetsMenu)
-			print("|cff2da3cf[Rune Reminder]|r Rune Set |cffabdaeb"..setToApply.."|r is already active")
+			print(string.format("|cff2da3cf[%s]|r %s |cffabdaeb%s|r %s", L["Rune Reminder"], L["Rune Set"], setToApply, L["is already active"]))
 		end
 		
 		if beginImmediately then
@@ -1301,7 +1313,7 @@ local function CreateSlotButtons(forcereset)
 			else
 				   if #runes == 0 or (currentRunes[slotID] and #runes == 1) then
 				  
-						UIErrorsFrame:AddMessage("No runes available for ".. slotName..".", r, g, b, 1.0)
+						UIErrorsFrame:AddMessage(L["No runes available for "].. slotName..".", r, g, b, 1.0)
 						PlaySound(846) 
 					else
 						PlaySound(867)
@@ -1521,7 +1533,7 @@ local function UpdateRuneSlotButton(slotID)
 			else
 				GameTooltip:ClearLines() -- Clear existing lines
 				GameTooltip:AddLine(runeInfo.name, 0.67, 0.85, 0.92) -- Rune name in custom color
-				GameTooltip:AddLine(slotName .. " Engraved", 0, 0.55, 0) -- Slot engraving in green
+				GameTooltip:AddLine(slotName .. L[" Engraved"], 0, 0.55, 0) -- Slot engraving in green
 			end
             GameTooltip:Show()
         end)
@@ -1595,7 +1607,7 @@ local function UpdateRuneSlotButton(slotID)
                 print("|cff2da3cf[Rune Reminder]|r Run OnEnter - " .. slotName)
             end
             GameTooltip:SetOwner(button, "ANCHOR_RIGHT")
-            GameTooltip:SetText(slotName .. ": No Engraving") 
+            GameTooltip:SetText(slotName .. L[": No Engraving"]) 
             GameTooltip:Show()
         end)
         button:SetScript("OnLeave", function()
@@ -1867,7 +1879,7 @@ end
 -- Function to reset settings to default
 function ResetSettings()
     RuneReminder_CurrentSettings = DeepCopy(defaults)
-    print("Settings reset to default.")
+    print(L["Settings reset to default."])
 end
 
 -- Initialize settings for a character
@@ -2008,13 +2020,13 @@ end
 -- Create Options Panel
 local function CreateOptionsPanel()
     local panel = CreateFrame("Frame", "RuneReminderOptionsPanel", InterfaceOptionsFramePanelContainer)
-    panel.name = "Rune Reminder"
+    panel.name = L["Rune Reminder"]
     panel:Hide()
 	
 	
 	-- Dropdown for Current Profile
 	local profileDropdown = CreateFrame("Frame", "RuneReminderProfileDropdown", panel, "UIDropDownMenuTemplate")
-	profileDropdown:SetPoint("TOPLEFT", panel, "TOPLEFT", 250, -10)
+	profileDropdown:SetPoint("TOPLEFT", panel, "TOPLEFT", 460, -10)
 	
 	UIDropDownMenu_SetWidth(profileDropdown, 120)
 	if currentProfile == "SharedSettings" or not RR_CharacterProfiles[characterID] then
@@ -2071,7 +2083,10 @@ local function CreateOptionsPanel()
 	
 	profileDropdown:SetScript("OnEnter", function(self)
 		GameTooltip:SetOwner(self, "ANCHOR_TOPLEFT") 
-		GameTooltip:SetText("Switch between character specific settings and the Shared Profile.\nShared Profile is the default for new characters and shared by all that use it.")  -- true for wrap text
+
+		local tooltipText = string.format("%s\n%s", L["Switch between character specific settings and the Shared Profile."], L["Shared Profile is the default for new characters and shared by all that use it."])
+		GameTooltip:SetText(tooltipText)  -- true for wrap text
+		
 		GameTooltip:Show()
 	end)
 
@@ -2090,14 +2105,14 @@ local function CreateOptionsPanel()
 	--end)
 	
 	local function updateButtonSize(slider, value)
-		_G[slider:GetName() .. "Text"]:SetText("Button Size: " .. value)
+		_G[slider:GetName() .. "Text"]:SetText(L["Button Size: "] .. value)
 		if RuneReminder_CurrentSettings.buttonSize ~= value then
 			RuneReminder_CurrentSettings.buttonSize = value
 			ResetAllButtons()
 		end
 	end
 	local function updateButtonPadding(slider, value)
-		_G[slider:GetName() .. "Text"]:SetText("Button Pading: " .. value)
+		_G[slider:GetName() .. "Text"]:SetText(L["Button Padding: "] .. value)
 		if RuneReminder_CurrentSettings.buttonPadding ~= value then
 			RuneReminder_CurrentSettings.buttonPadding = value
 			ResetAllButtons()
@@ -2105,7 +2120,7 @@ local function CreateOptionsPanel()
 	end
 
 	local function updateGlowOpacity(slider, value)
-		_G[slider:GetName() .. "Text"]:SetText("Glow Opacity: " .. value)
+		_G[slider:GetName() .. "Text"]:SetText(L["Glow Opacity: "] .. value)
 		if RuneReminder_CurrentSettings.glowOpacity ~= value then
 			RuneReminder_CurrentSettings.glowOpacity = value
 			ResetAllButtons()
@@ -2129,7 +2144,9 @@ local function CreateOptionsPanel()
 
     local title = panel:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
     title:SetPoint("TOPLEFT", 16, -16)
-    title:SetText("Rune Reminder Options - Version "..version)
+
+    local titleText = string.format("%s %s - %s %s", L["Rune Reminder"], L["Options"], L["Version"], version)
+	title:SetText(titleText)
 	
 	
 
@@ -2146,7 +2163,7 @@ local function CreateOptionsPanel()
 	
 	local characterToggleLabel = scrollChild:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
 	characterToggleLabel:SetPoint("TOPLEFT", scrollChild, "TOPLEFT", 340, -10)  
-	characterToggleLabel:SetText("Character Panel Engraving Mode")
+	characterToggleLabel:SetText(L["Character Panel Engraving Mode"])
 
 	-- Add a dropdown for tooltip anchor setting
 	local characterToggleDropdown = CreateFrame("Frame", "RuneReminderEngravingModeDropdown", scrollChild, "UIDropDownMenuTemplate")
@@ -2174,7 +2191,14 @@ local function CreateOptionsPanel()
 
 	characterToggleDropdown:SetScript("OnEnter", function(self)
 		GameTooltip:SetOwner(self, "ANCHOR_TOPLEFT") 
-		GameTooltip:SetText("Adjust default visibility of the Engraving panel on your character screen.\n \nSHOW will always open display the Engraving panel when you open your character window.\nHIDE will collapse/hide the engraving frame from your character window until you hit the Runes button.\nTOGGLE will remember if you had the frame open or closed.")  -- true for wrap text
+		local tooltipText = string.format("%s\n \n%s\n%s\n%s",
+			L["Adjust default visibility of the Engraving panel on your character screen."],
+			L["SHOW will always open display the Engraving panel when you open your character window."],
+			L["HIDE will collapse/hide the engraving frame from your character window until you hit the Runes button."],
+			L["TOGGLE will remember if you had the frame open or closed."]
+		)
+
+		GameTooltip:SetText(tooltipText)  -- true for wrap text
 		GameTooltip:Show()
 	end)
 
@@ -2343,72 +2367,73 @@ local function CreateOptionsPanel()
 	-- Rune Reminder Options (Label)
 	local optionsLabel = scrollChild:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
 	optionsLabel:SetPoint("TOPLEFT", 16, yOffset)
-	optionsLabel:SetText("Notification Options")
+	optionsLabel:SetText(L["Notification Options"])
 
 	-- Next row starts after the label
 	yOffset = yOffset - 20
 
 	-- Left Column
-	local enabledCheckbox = CreateCheckbox("enabled", "left", yOffset, "Enable All Popup Notifications", "Toggle the popups (for all slots) on or off.")
-	local soundCheckbox = CreateCheckbox("soundNotification", "left", yOffset - 30, "Enable Sound Notifications", "Toggle sound notifications for rune changes.")
-	local handsCheckbox = CreateCheckbox("handsNotification", "left", yOffset - 60, "Enable Hands Notifications", "Toggle notifications for changes in Hands slot.")
-	local chestCheckbox = CreateCheckbox("chestNotification", "left", yOffset - 90, "Enable Chest Notifications", "Toggle notifications for changes in Chest slot.")
-	local legsCheckbox = CreateCheckbox("legsNotification", "left", yOffset - 120, "Enable Legs Notifications", "Toggle notifications for changes in Legs slot.")
+	local enabledCheckbox = CreateCheckbox("enabled", "left", yOffset, L["Enable All Popup Notifications"], L["Toggle the popups (for all slots) on or off."])
+	local soundCheckbox = CreateCheckbox("soundNotification", "left", yOffset - 30, L["Enable Sound Notifications"], L["Toggle sound notifications for rune changes."])
+	local handsCheckbox = CreateCheckbox("handsNotification", "left", yOffset - 60, L["Enable Hands Notifications"], L["Toggle notifications for changes in Hands slot."])
+	local chestCheckbox = CreateCheckbox("chestNotification", "left", yOffset - 90, L["Enable Chest Notifications"], L["Toggle notifications for changes in Chest slot."])
+	local legsCheckbox = CreateCheckbox("legsNotification", "left", yOffset - 120, L["Enable Legs Notifications"], L["Toggle notifications for changes in Legs slot."])
 
 	-- Right Column
-	local hideReapplyButtonCheckbox = CreateCheckbox("hideReapplyButton", "right", yOffset - 30, "Hide Re-Apply Button", "Toggle the visibility of the Re-Apply Rune button in popups.")
-	local hideViewRunesButtonCheckbox = CreateCheckbox("hideViewRunesButton", "right", yOffset - 60, "Hide View Runes Button", "Toggle the visibility of the View Runes button in popups.")
-	local disableSwapCheckbox = CreateCheckbox("disableSwapNotify", "right", yOffset - 90, "Disable when swapping to engraved gear", "Disable popup notification when equipping engraved gear.")
-	local disableRemoveCheckbox = CreateCheckbox("disableRemoveNotify", "right", yOffset - 120, "Disable when removing gear", "Disable popup notification when removing gear (without a new piece replacing it)")
+	local hideReapplyButtonCheckbox = CreateCheckbox("hideReapplyButton", "right", yOffset - 30, L["Hide Re-Apply Button"], L["Toggle the visibility of the Re-Apply Rune button in popups."])
+	local hideViewRunesButtonCheckbox = CreateCheckbox("hideViewRunesButton", "right", yOffset - 60, L["Hide View Runes Button"], L["Toggle the visibility of the View Runes button in popups."])
+	local disableSwapCheckbox = CreateCheckbox("disableSwapNotify", "right", yOffset - 90, L["Disable when swapping to engraved gear"], L["Disable popup notification when equipping engraved gear."])
+	local disableRemoveCheckbox = CreateCheckbox("disableRemoveNotify", "right", yOffset - 120, L["Disable when removing gear"], L["Disable popup notification when removing gear (without a new piece replacing it)"])
 
 	-- Runes Widget Options (Label)
 	yOffset = yOffset - 160
 	local widgetLabel = scrollChild:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
 	widgetLabel:SetPoint("TOPLEFT", 16, yOffset)
-	widgetLabel:SetText("Runes Widget & Rune Sets Options")
+	widgetLabel:SetText(L["Runes Widget & Rune Sets Options"])
 
 	-- Next row starts after the label
 	yOffset = yOffset - 20
 
+	local runeTextureLabel = scrollChild:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
+	runeTextureLabel:SetPoint("TOPLEFT", widgetLabel, "BOTTOMLEFT", 5, -10)  
+	runeTextureLabel:SetText(L["Rune Texture:"])
+	local runeTextureDropdown = CreateFrame("Frame", "RuneReminderRuneTextureDropdown", scrollChild, "UIDropDownMenuTemplate")
+	runeTextureDropdown:SetPoint("TOPLEFT", runeTextureLabel, "RIGHT", 0, 12)  
+	UIDropDownMenu_SetWidth(runeTextureDropdown, 150)
+
 	-- Left Column
-	local displayRunesCheckbox = CreateCheckbox("displayRunes", "left", yOffset, "Display Runes Widget", "Toggle the display of the Runes Widget")
-	local hideUnknownCheckbox = CreateCheckbox("hideUnknownRunes", "left", yOffset - 30, "Hide Unknown Runes", "Prevents runes that have not been found from displaying in the Runes Widget")
-	local keepOpenCheckbox = CreateCheckbox("keepOpen", "left", yOffset - 60, "Keep Runes Open (during/after engraving)", "Disable auto-collapse when applying a new rune.")
-	local disableLeftClickCheckbox = CreateCheckbox("disableLeftClickKeepOpen", "left", yOffset - 90, "Disable LeftClick-to-Toggle w/ Keep Open", "Prevents normal left clicks from collapsing a column/row when Keep Open is enabled.")
-	local autoToggleOnHoverCheckbox = CreateCheckbox("autoToggleOnHover", "left", yOffset - 120, "Auto Toggle on Hover", "Automatically show/hide runes when hovering over runes/slot buttons.")
-	local rotateRunesCheckbox = CreateCheckbox("rotateRunes", "left", yOffset - 150, "Rotate Runes", "Toggle between Horizontal and Vertical alignment.")
-	local swapDirectionCheckbox = CreateCheckbox("swapDirection", "left", yOffset - 180, "Swap Direction", "Swap the direction the runes expand in the widget.")
-	local displayAnchorCheckbox = CreateCheckbox("anchorVisible", "left", yOffset - 210, "Display Positioning Anchor", "Controls display of the Anchor for positioning. This can also be toggled by Right Clicking the anchor.\n\nNOTE: Even when hidden, it's grab/draggable. Lock positioning below if you do not want it to be.")
-	local lockAnchorCheckbox = CreateCheckbox("anchorLocked", "left", yOffset - 240, "Lock Positioning Anchor", "Locks the anchor in place, preventing accidental click/drag repositioning.")
-	
+	local displayRunesCheckbox = CreateCheckbox("displayRunes", "left", yOffset - 30, L["Display Runes Widget"], L["Toggle the display of the Runes Widget"])
+	local setEngraveOnLoadCheckbox = CreateCheckbox("setEngraveOnLoad", "left", yOffset - 60, L["Begin Engraving Immediately (Rune Sets)"], L["If enabled, selecting to Load a Rune Set will immediately attempt to begin engraving."])
+	local toggleRuneSetsCheckbox = CreateCheckbox("toggleSets", "left", yOffset - 90, L["Toggle Rune Slots by Right Clicking on Rune Sets"], L["If enabled, right clicking the Rune Sets button will expand/collapse the Runes Widget."])
+	local disableGlowCheckbox = CreateCheckbox("disableGlow", "left", yOffset - 120, L["Disable Engraved Glow"], L["Removes the custom glow texture on engraved rune slots."] .. "\n\n" .. L["NOTE: The Checked state will overlap with this. Most users will not want both enabled together."])
+	local enableCheckedCheckbox = CreateCheckbox("enableChecked", "left", yOffset - 150, L["Set Checked State"], L["Enables the Checked state, which gives an alternate glow effect. This effect can be stylized in Masque."] .. "\n\n" .. L["NOTE: The Checked state will overlap with the custom Glow texture. Most users will not want both enabled together."])
+	local toggleRuneSetsTogglesAllCheckbox = CreateCheckbox("toggleSetsTogglesAll", "left", yOffset - 210, L["Rune Sets Toggle Expands All"], L["If enabled, when right clicking the Rune Sets button, all slots will default to expanded/displayed."])
+	local hideUnknownCheckbox = CreateCheckbox("hideUnknownRunes", "left", yOffset - 240, L["Hide Unknown Runes"], L["Prevents runes that have not been found from displaying in the Runes Widget"])
+	local keepOpenCheckbox = CreateCheckbox("keepOpen", "left", yOffset - 270, L["Keep Runes Open (during/after engraving)"], L["Disable auto-collapse when applying a new rune."])
+	local disableLeftClickCheckbox = CreateCheckbox("disableLeftClickKeepOpen", "left", yOffset - 300, L["Disable LeftClick-to-Toggle w/ Keep Open"], L["Prevents normal left clicks from collapsing a column/row when Keep Open is enabled."])
+	local autoToggleOnHoverCheckbox = CreateCheckbox("autoToggleOnHover", "left", yOffset - 330, L["Auto Toggle on Hover"], L["Automatically show/hide runes when hovering over runes/slot buttons."])
+	local rotateRunesCheckbox = CreateCheckbox("rotateRunes", "left", yOffset - 360, L["Rotate Runes"], L["Toggle between Horizontal and Vertical alignment."])
+	local swapDirectionCheckbox = CreateCheckbox("swapDirection", "left", yOffset - 390, L["Swap Direction"], L["Swap the direction the runes expand in the widget."])
+	local displayCooldownCheckbox = CreateCheckbox("displayCooldown", "left", yOffset - 420, L["Display Cooldown Animation"], L["Display cooldown animation on engraved runes."])
+	local displayAnchorCheckbox = CreateCheckbox("anchorVisible", "left", yOffset - 480, L["Display Positioning Anchor"], L["Controls display of the Anchor for positioning. This can also be toggled by Right Clicking the anchor."] .. "\n\n" .. L["NOTE: Even when hidden, it's grab/draggable. Lock positioning below if you do not want it to be."])
+
 	-- Right Column
-	local displayRuneSetsCheckbox = CreateCheckbox("displayRuneSets", "left-2", yOffset, "Display Rune Sets", "Toggle the display of the Rune Sets button")
-	local setEngraveOnLoadCheckbox = CreateCheckbox("setEngraveOnLoad", "right", yOffset, "Begin Engraving Immediately (Rune Sets)", "If enabled, selecting to Load a Rune Set will immediately attempt to begin engraving.")
-	local toggleRuneSetsCheckbox = CreateCheckbox("toggleSets", "right", yOffset - 30, "Toggle Rune Slots by Right Clicking on Rune Sets", "If enabled, right clicking the Rune Sets button will expand/collapse the Runes Widget.")
-	local toggleRuneSetsTogglesAllCheckbox = CreateCheckbox("toggleSetsTogglesAll", "right", yOffset - 60, "Rune Sets Toggle Expands All", "If enabled, when right clicking the Rune Sets button, all slots will default to expanded/displayed.")
-	local disableGlowCheckbox = CreateCheckbox("disableGlow", "right", yOffset - 90, "Disable Engraved Glow", "Removes the custom glow texture on engraved rune slots. \n\nNOTE: The Checked state will overlap with this. Most users will not want both enabled together.")
-	local enableCheckedCheckbox = CreateCheckbox("enableChecked", "right-2", yOffset - 90, "Set Checked State", "Enables the Checked state, which gives an alternate glow effect. This effect can be stylized in Masque.\n\nNOTE: The Checked state will overlap with the custom Glow texture. Most users will not want both enabled together.")
+	local displayRuneSetsCheckbox = CreateCheckbox("displayRuneSets", "right", yOffset, L["Display Rune Sets"], L["Toggle the display of the Rune Sets button"])
 	local glowTextureLabel = scrollChild:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
-	glowTextureLabel:SetPoint("TOPLEFT", disableGlowCheckbox, "BOTTOMLEFT", 5, -5)  
-	glowTextureLabel:SetText("Glow Texture:")
+	glowTextureLabel:SetPoint("TOPLEFT", enableCheckedCheckbox, "BOTTOMLEFT", 5, -10)  
+	glowTextureLabel:SetText(L["Glow Texture:"])
 	
-	local glowOpacitySlider = CreateSliderWithTextbox("glowOpacity", "Glow Opacity", 0.0, 1.0, 0.1, 355, yOffset - 165, 175)
+	local glowOpacitySlider = CreateSliderWithTextbox("glowOpacity", L["Glow Opacity"], 0.0, 1.0, 0.1, 355, yOffset - 150, 175)
 	local glowTextureDropdown = CreateFrame("Frame", "RuneReminderGlowTextureDropdown", scrollChild, "UIDropDownMenuTemplate")
 	glowTextureDropdown:SetPoint("TOPLEFT", glowTextureLabel, "RIGHT", -10, 12)  
-	
-	local runeTextureDropdown = CreateFrame("Frame", "RuneReminderRuneTextureDropdown", scrollChild, "UIDropDownMenuTemplate")
-	runeTextureDropdown:SetPoint("TOPLEFT", displayRuneSetsCheckbox, "LEFT", -10, -10)  
-	
-
-	local displayCooldownCheckbox = CreateCheckbox("displayCooldown", "right", yOffset - 210, "Display Cooldown Animation", "Display cooldown animation on engraved runes.")
-	local displayCooldownTextCheckbox = CreateCheckbox("displayCooldownText", "right", yOffset - 240, "Display Cooldown Text", "Display time remaining on cooldown for engraved runes. Turn this off if you're seeing doubled up numbers from another addon.")
-	
-	local simpleTooltipsCheckbox = CreateCheckbox("simpleTooltips", "left", yOffset - 270, "Simple Tooltips", "Removes the Engraving Tooltips from the Rune Slots")
+	local simpleTooltipsCheckbox = CreateCheckbox("simpleTooltips", "right", yOffset - 240, L["Simple Tooltips"], L["Removes the Engraving Tooltips from the Rune Slots"])
+	local displayCooldownTextCheckbox = CreateCheckbox("displayCooldownText", "right", yOffset - 420, L["Display Cooldown Text"], L["Display time remaining on cooldown for engraved runes. Turn this off if you're seeing doubled up numbers from another addon."])
 	local tooltipAnchorLabel = scrollChild:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
-	tooltipAnchorLabel:SetPoint("TOPLEFT", displayCooldownTextCheckbox, "BOTTOMLEFT", 5, -10) 
-	tooltipAnchorLabel:SetText("Tooltip Position:")
+	tooltipAnchorLabel:SetPoint("TOPLEFT", displayCooldownCheckbox, "BOTTOMLEFT", 5, -10) 
+	tooltipAnchorLabel:SetText(L["Tooltip Position:"])
+	local lockAnchorCheckbox = CreateCheckbox("anchorLocked", "right", yOffset - 480, L["Lock Positioning Anchor"], L["Locks the anchor in place, preventing accidental click/drag repositioning."])
 
-	yOffset = yOffset - 350
+	yOffset = yOffset - 610
 
 	glowTextureDropdown.initialize = function(self, level)
 			local info = UIDropDownMenu_CreateInfo()
@@ -2493,7 +2518,7 @@ local function CreateOptionsPanel()
 
 	tooltipAnchorLabel:SetScript("OnEnter", function(self)
 		GameTooltip:SetOwner(self, "ANCHOR_TOPLEFT") 
-		GameTooltip:SetText("Adjust tooltip anchoring in relation to the rune button") 
+		GameTooltip:SetText(L["Adjust tooltip anchoring in relation to the rune button"]) 
 		GameTooltip:Show()
 	end)
 
@@ -2642,12 +2667,11 @@ local function CreateOptionsPanel()
 
 	-- Sliders
 	local widgetButtonSizeLabel = scrollChild:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
-	widgetButtonSizeLabel:SetPoint("TOPLEFT", 16, yOffset + 40)
-	widgetButtonSizeLabel:SetText("Button Size & Padding")
+	widgetButtonSizeLabel:SetPoint("TOPLEFT", 16, yOffset + 60)
+	widgetButtonSizeLabel:SetText(L["Button Size & Padding"])
 	local widgetPosLabel = scrollChild:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
-	widgetPosLabel:SetPoint("TOPLEFT", 500, yOffset + 40)
-	widgetPosLabel:SetText("Adjust Positioning")
-	
+	widgetPosLabel:SetPoint("TOPLEFT", 470, yOffset + 40)
+	widgetPosLabel:SetText(L["Adjust Positioning"])	
 	
 	-- Create xOffsetSlider with textbox
 	--local xOffsetSlider, xOffsetTextbox = CreateSliderWithTextbox("xOffset", "X Offset", -2000, 2000, 1, 16, yOffset, 400)
@@ -2658,10 +2682,10 @@ local function CreateOptionsPanel()
 	--yOffset = yOffset - 60 
 
 	-- Create buttonSizeSlider with textbox
-	local buttonSizeSlider, buttonSizeTextbox = CreateSliderWithTextbox("buttonSize", "Button Size", 5, 100, 1, 16, yOffset, 400)
+	local buttonSizeSlider, buttonSizeTextbox = CreateSliderWithTextbox("buttonSize", L["Button Size"], 5, 100, 1, 16, yOffset, 400)
 	yOffset = yOffset - 60
 	
-	local paddingSlider, paddingTextbox = CreateSliderWithTextbox("buttonPadding", "Button Padding", 0, 10, 1, 16, yOffset, 400)
+	local paddingSlider, paddingTextbox = CreateSliderWithTextbox("buttonPadding", L["Button Padding"], 0, 10, 1, 16, yOffset, 400)
 		
 	-- Update the size of the scroll child based on the number of elements
 	scrollChild:SetSize(600, math.abs(yOffset))
@@ -2670,18 +2694,18 @@ local function CreateOptionsPanel()
 	-- Function to update the labels for Alignment and Direction
 	local function UpdateOptionLabels()
 		if RuneReminder_CurrentSettings.runeAlignment == "Horizontal" then
-			rotateRunesCheckbox.Text:SetText("Rotate Runes - Currently: Horizontal")
+			rotateRunesCheckbox.Text:SetText(L["Rotate Runes - Currently: Horizontal"])
 			if RuneReminder_CurrentSettings.runeDirection == "Standard" then
-				swapDirectionCheckbox.Text:SetText("Swap Direction - Currently: Standard - Expand Down")
+				swapDirectionCheckbox.Text:SetText(L["Swap Direction - Currently: Standard - Expand Down"])
 			else
-				swapDirectionCheckbox.Text:SetText("Swap Direction - Currently: Alternate - Expand Up")
+				swapDirectionCheckbox.Text:SetText(L["Swap Direction - Currently: Alternate - Expand Up"])
 			end
 		else
-			rotateRunesCheckbox.Text:SetText("Rotate Runes - Currently: Vertical")
+			rotateRunesCheckbox.Text:SetText(L["Rotate Runes - Currently: Vertical"])
 			if RuneReminder_CurrentSettings.runeDirection == "Standard" then
-				swapDirectionCheckbox.Text:SetText("Swap Direction - Currently: Standard - Expand Right")
+				swapDirectionCheckbox.Text:SetText(L["Swap Direction - Currently: Standard - Expand Right"])
 			else
-				swapDirectionCheckbox.Text:SetText("Swap Direction - Currently: Alternate - Expand Left")
+				swapDirectionCheckbox.Text:SetText(L["Swap Direction - Currently: Alternate - Expand Left"])
 			end
 		end
 	end
@@ -2858,8 +2882,8 @@ local function CreateOptionsPanel()
 
 	-- Reset Button
 	local resetButton = CreateFrame("Button", "ResetPositionButton", scrollChild, "UIPanelButtonTemplate")
-	resetButton:SetText("Reset")
-	resetButton:SetSize(40, 20)
+	resetButton:SetText(L["Reset"])
+	resetButton:SetSize(50, 20)
 	resetButton:SetPoint("TOP", scrollChild, "TOP", 250, yOffset + 25) 
 	resetButton:SetScript("OnClick", function()
 		initFrame(true)
@@ -2868,7 +2892,7 @@ local function CreateOptionsPanel()
 
 	resetButton:SetScript("OnEnter", function(self)
 		GameTooltip:SetOwner(self, "ANCHOR_TOPLEFT") 
-		GameTooltip:SetText("Reset Positioning")  -- true for wrap text
+		GameTooltip:SetText(L["Reset Positioning"])  -- true for wrap text
 		GameTooltip:Show()
 	end)
 
@@ -2923,7 +2947,7 @@ local function CreateOptionsPanel()
 		
 		
 		
-		GameTooltip:SetText("Move "..direction.." "..tostring(amount))  -- true for wrap text
+		GameTooltip:SetText(L["Move "]..L[direction].." "..tostring(amount))  -- true for wrap text
 		GameTooltip:Show()
 	end)
 
@@ -2995,16 +3019,30 @@ end
 
 local function ShowRuneUpdateMessageInChat(oldItemLink, oldRune, newItemLink, newRune, slotName)
     if not RuneReminder_CurrentSettings.enabled and not RuneReminder_CurrentSettings[string.lower(slotName) .. "Notification"] then return end
-    local message = "|cff2da3cf[Rune Reminder]|cffffffff " .. slotName .. " updated - "	
+    local message = string.format("|cff2da3cf[%s]|cffffffff %s %s - ",
+    L["Rune Reminder"],
+    L["updated"],
+    slotName
+)
 	
     if oldRune and not newRune then
-        message = message .. "|cffabdaeb" .. oldRune.name .. "|cffffffff has been removed."
+        message = message .. string.format("|cffabdaeb%s|cffffffff %s",
+			oldRune.name,
+			L["has been removed."]
+		)
 		DEFAULT_CHAT_FRAME:AddMessage(message, 0, 1, 1)
     elseif oldRune and newRune and oldRune.name ~= newRune.name then
-        message = message .. "|cffabdaeb" .. oldRune.name .. "|cffffffff has been replaced with |cffabdaeb" .. newRune.name .. "|r."
+        message = message .. string.format("|cffabdaeb%s|cffffffff %s |cffabdaeb%s|r.",
+			oldRune.name,
+			L["has been replaced with"],
+			newRune.name
+		)
 		DEFAULT_CHAT_FRAME:AddMessage(message, 0, 1, 1)
 	elseif newRune and not oldRune then
-        message = message .. "|cffabdaeb" .. newRune.name .. "|cffffffff has been added."
+        message = message .. string.format("|cffabdaeb%s|cffffffff %s.",
+			newRune.name,
+			L["has been added"]
+		)
 		DEFAULT_CHAT_FRAME:AddMessage(message, 0, 1, 1)
     end
 
@@ -3014,7 +3052,11 @@ end
 
 local function ShowRuneUpdatePopup(oldItemLink, oldRune, newItemLink, newRune, slotName)
     if not RuneReminder_CurrentSettings.enabled and not RuneReminder_CurrentSettings[string.lower(slotName) .. "Notification"] then return end
-    local baseText = "|cff2da3cf[Rune Reminder]|cffffffff " .. slotName .. " updated!|r\n"
+    local baseText = string.format("|cff2da3cf[%s]|cffffffff %s %s!|r\n",
+		L["Rune Reminder"],
+		L["updated"],
+		slotName
+	)
     local runeText = ""
     local skillLineAbilityID = oldRune and oldRune.skillLineAbilityID or nil
 
@@ -3030,9 +3072,16 @@ local function ShowRuneUpdatePopup(oldItemLink, oldRune, newItemLink, newRune, s
     local currentItemLink = GetInventoryItemLink("player", slotID)
 
     if oldRune and not newRune and not RuneReminder_CurrentSettings.disableRemoveNotify then
-        runeText = "|cffabdaeb" .. oldRune.name .. "|cffffffff has been removed."
+        runeText = string.format("|cffabdaeb%s|cffffffff %s.",
+			oldRune.name,
+			L["has been removed"]
+		)
     elseif oldRune and newRune and oldRune.name ~= newRune.name and not RuneReminder_CurrentSettings.disableSwapNotify then
-        runeText = "|cffabdaeb" .. oldRune.name .. "|cffffffff has been replaced with |cffabdaeb" .. newRune.name .. "|r."
+        runeText = string.format("|cffabdaeb%s|cffffffff %s |cffabdaeb%s|r.",
+			oldRune.name,
+			L["has been replaced with"],
+			newRune.name
+		)
 	else 
 		return
     end
@@ -3046,14 +3095,14 @@ local function ShowRuneUpdatePopup(oldItemLink, oldRune, newItemLink, newRune, s
     }
 	
     if (not RuneReminder_CurrentSettings.hideReapplyButton) and currentItemLink and skillLineAbilityID then
-        dialog.button1 = "Re-Apply " .. oldRune.name
+        dialog.button1 = L["Re-Apply "] .. oldRune.name
         dialog.OnButton1 = function()
             EngraveRune(slotName, skillLineAbilityID)
         end
     end
 
     if not RuneReminder_CurrentSettings.hideViewRunesButton then
-        dialog.button3 = "View Runes"
+        dialog.button3 = L["View Runes"]
         dialog.OnAlt = function()
             if not PaperDollFrame:IsVisible() then
                 ToggleCharacter("PaperDollFrame")
@@ -3066,11 +3115,6 @@ local function ShowRuneUpdatePopup(oldItemLink, oldRune, newItemLink, newRune, s
     StaticPopupDialogs["RUNE_UPDATE_REMINDER"] = dialog
     StaticPopup_Show("RUNE_UPDATE_REMINDER")
 end
-
-
-
-
-
 
 local function UpdateRunes(includePopups, includeChat)
     for slotID, slotName in pairs(validSlots) do
@@ -3130,7 +3174,11 @@ end
 local function PrintCurrentRunes()
        for slotID, slotName in pairs(validSlots) do
             local runeInfo = currentRunes[slotID]
-            print("|cff2da3cf[Rune Reminder]|r " .. slotName .. ": " .. (runeInfo and "|cffabdaeb" .. runeInfo.name or "None"))
+            print(string.format("|cff2da3cf[%s]|r %s: %s",
+				L["Rune Reminder"],
+				slotName,
+				(runeInfo and "|cffabdaeb" .. runeInfo.name or L["None"])
+			))
         end
 end
 
@@ -3160,7 +3208,7 @@ end
 
 function ApplyRuneSet(setToLoad, setName)
     if not setToLoad or next(setToLoad) == nil then
-        print("|cff2da3cf[Rune Reminder]|r Error: Invalid or empty Rune Set.")
+        print("|cff2da3cf[" .. L["Rune Reminder"] .. "]|r " .. L["Error: Invalid or empty Rune Set."])
         return
     end
 
@@ -3168,7 +3216,13 @@ function ApplyRuneSet(setToLoad, setName)
 	local differences = GetDifferencesBetweenSets(currentRunes, setToLoad)
 	
 	if next(differences) == nil then -- If no differences, set is correctly applied
-		print("|cff2da3cf[Rune Reminder]|r Rune Set '" .. setName .. "' has been fully applied successfully.")
+		print(string.format("|cff2da3cf[%s]|r %s '%s' %s.",
+			L["Rune Reminder"],
+			L["Rune Set"],
+			setName,
+			L["has been fully applied successfully"]
+		))
+
 		updateRunes(false, false)
 	else
 	
@@ -3178,7 +3232,13 @@ function ApplyRuneSet(setToLoad, setName)
 		local slot = GetSlotName(slotID)
 		
 		if not runeDetails then
-			print("|cff2da3cf[Rune Reminder]|r Error: Unable to find details for rune ID " .. runeID)
+			print(string.format("|cff2da3cf[%s]|r %s %s %s %s.",
+				L["Rune Reminder"],
+				L["Error:"],
+				L["Unable to find details for rune ID"],
+				runeID
+			))
+
 			return
 		else 
 			
@@ -3200,7 +3260,16 @@ function ApplyRuneSet(setToLoad, setName)
 							
 							ReplaceEnchant()
 							StaticPopup_Hide("REPLACE_ENCHANT")
-							print("|cff2da3cf[Rune Reminder]|r Applying |cffabdaeb" .. runeDetails.name .. "|r to " ..slot.. " for Rune Set |cffabdaeb".. setName.."|r.")
+							print(string.format("|cff2da3cf[%s]|r %s |cffabdaeb%s|r %s |cffabdaeb%s|r %s |cffabdaeb%s|r.",
+								L["Rune Reminder"],
+								L["Applying"],
+								runeDetails.name,
+								L["to"],
+								slot,
+								L["for Rune Set"],
+								setName
+							))
+
 							ClearCursor()
 							
 					end
@@ -3232,7 +3301,13 @@ function DeleteRuneSet(setName, sendinChat)
     if RR_RuneSets[characterID] and RR_RuneSets[characterID][setName] then
         RR_RuneSets[characterID][setName] = nil
         -- Confirmation message moved to OnAccept
-		print("|cff2da3cf[Rune Reminder]|r Rune Set "..setName.. " has been deleted.")
+		print(string.format("|cff2da3cf[%s]|r %s '%s' %s.",
+			L["Rune Reminder"],
+			L["Rune Set"],
+			setName,
+			L["has been deleted"]
+		))
+
     end
 end
 
@@ -3263,37 +3338,60 @@ function SaveRuneSet(setName)
     if identicalSetExists and identicalSetName ~= setName then
         -- Inform the user an identical set exists and provide options
         StaticPopupDialogs["CONFIRM_IDENTICAL_RUNE_SET"] = {
-            text = "|cff2da3cf[Rune Reminder]|r\n An identical Rune Set named '" .. identicalSetName .. "' already exists.",
-            button1 = "Create New",
-            button3 = "Rename '".. identicalSetName .."' to '"..setName.."'",
-            button4 = "Cancel",
-            OnButton1 = function()
-                RR_RuneSets[characterID][setName] = currentSet
-                print("|cff2da3cf[Rune Reminder]|r New set '" .. setName .. "' created with identical runes.")
-            end,
-            OnAlt = function()
+			text = string.format("|cff2da3cf[%s]|r\n %s '%s' %s.",
+				L["Rune Reminder"],
+				L["An identical Rune Set named"],
+				identicalSetName,
+				L["already exists."]
+			),
+			button1 = L["Create New"],
+			button3 = string.format(L["%s '%s' %s '%s'"], L["Rename"], identicalSetName, L["to"], setName),
+			button4 = L["Cancel"],
+			OnButton1 = function()
 				RR_RuneSets[characterID][setName] = currentSet
-                RR_RuneSets[characterID][identicalSetName] = nil		
-                print("|cff2da3cf[Rune Reminder]|r Set '" .. identicalSetName .. "' renamed to ".. setName..".")
-            end,
-            timeout = 0,
-            whileDead = true,
-            hideOnEscape = true,
-            preferredIndex = 3, -- Avoid taint
-        }
+				print(string.format("|cff2da3cf[%s]|r %s '%s' %s.",
+					L["Rune Reminder"],
+					L["New set"],
+					setName,
+					L["created with identical runes."]
+				))
+			end,
+			OnAlt = function()
+				RR_RuneSets[characterID][setName] = currentSet
+				RR_RuneSets[characterID][identicalSetName] = nil
+				print(string.format("|cff2da3cf[%s]|r %s '%s' %s '%s'.",
+					L["Rune Reminder"],
+					L["Set"],
+					identicalSetName,
+					L["renamed to"],
+					setName
+				))
+			end,
+			timeout = 0,
+			whileDead = true,
+			hideOnEscape = true,
+			preferredIndex = 3, -- Avoid taint
+		}
+		
         StaticPopup_Show("CONFIRM_IDENTICAL_RUNE_SET")
     elseif existingSet then
         if AreRuneSetsIdentical(existingSet, currentSet) then
-            print("|cff2da3cf[Rune Reminder]|r Set '" .. setName .. "' already exists with the same runes.")
+            print(string.format("|cff2da3cf[%s]|r %s '%s' %s.",
+				L["Rune Reminder"],
+				L["Set"],
+				setName,
+				L["already exists with the same runes."]
+			))
+
         else
             -- Prompt user for update
             StaticPopupDialogs["CONFIRM_UPDATE_RUNE_SET"] = {
-                text = "|cff2da3cf[Rune Reminder]|r\nA set named '" .. setName .. "' already exists. Update with new runes?",
-                button1 = "Yes",
-                button2 = "No",
+                text = string.format("|cff2da3cf[%s]|r\n%s '%s' %s. %s", L["Rune Reminder"], L["A set named"], setName, L["already exists. Update with new runes?"], L["Update"]),
+                button1 = L["Yes"],
+                button2 = L["No"],
                 OnAccept = function()
                     RR_RuneSets[characterID][setName] = currentSet
-                    print("|cff2da3cf[Rune Reminder]|r " .. setName .. " updated with new runes.")
+                    print(string.format("|cff2da3cf[%s]|r %s %s %s.", L["Rune Reminder"], setName, L["updated with new runes"], L["."]))
                 end,
                 timeout = 0,
                 whileDead = true,
@@ -3305,13 +3403,13 @@ function SaveRuneSet(setName)
     else
         -- Save the new set and print out the details
         RR_RuneSets[characterID][setName] = currentSet
-        print("|cff2da3cf[Rune Reminder]|r Rune Set '" .. setName .. "' saved with:")
+        print(string.format("|cff2da3cf[%s]|r %s '%s' %s:", L["Rune Reminder"], L["Rune Set"], setName, L["saved with"]))
         for slotID, skillLineAbilityID in pairs(currentSet) do
             local runeDetails = GetRuneDetailsFromID(skillLineAbilityID)
             if runeDetails then
-                print("|cff2da3cf[Rune Reminder]|r " .. GetSlotName(slotID) .. ": |cffabdaeb" .. runeDetails.name)
+                print(string.format("|cff2da3cf[%s]|r %s: |cffabdaeb%s", L["Rune Reminder"], GetSlotName(slotID), runeDetails.name))
             else
-                print("|cff2da3cf[Rune Reminder]|r " .. GetSlotName(slotID) .. ": Unknown Rune")
+                print(string.format("|cff2da3cf[%s]|r %s: |cffabdaeb%s", L["Rune Reminder"], GetSlotName(slotID), L["Unknown Rune"]))
             end
         end
     end
@@ -3325,13 +3423,25 @@ function LoadRuneSet(setName, manual)
     local setToLoad = RR_RuneSets[characterID] and RR_RuneSets[characterID][setName]
 
     if not setToLoad then
-        print("|cff2da3cf[Rune Reminder]|r No saved set named '" .. setName .. "'.")
+        print(string.format("|cff2da3cf[%s]|r %s '%s' %s.",
+			L["Rune Reminder"],
+			L["No saved set named"],
+			setName,
+			"."
+		))
+
         return
     end
 	
     local differences = GetDifferencesBetweenSets(currentRunes, setToLoad)
     if next(differences) == nil then -- Check if differences table is empty
-        print("|cff2da3cf[Rune Reminder]|r You are already using the Rune Set '" .. setName .. "'.")
+        print(string.format("|cff2da3cf[%s]|r %s '%s' %s.",
+			L["Rune Reminder"],
+			L["You are already using the Rune Set"],
+			setName,
+			"."
+		))
+
         return
 	
     end
@@ -3341,12 +3451,12 @@ function LoadRuneSet(setName, manual)
 	-- Generate the detailed change message
 	local changeDetails = {}
 	for slotID, newRuneID in pairs(differences) do
-		local slotName = GetSlotName(slotID) or "Unknown Slot"
+		local slotName = GetSlotName(slotID) or L["Unknown Slot"]
 		local oldRuneDetails = currentRunes[slotID] and GetRuneDetailsFromID(currentRunes[slotID].skillLineAbilityID)
-		local oldRuneName = oldRuneDetails and oldRuneDetails.name or "No Rune"
+		local oldRuneName = oldRuneDetails and oldRuneDetails.name or L["No Rune"]
 
 		local newRuneDetails = GetRuneDetailsFromID(newRuneID)
-		local newRuneName = newRuneDetails and newRuneDetails.name or "Unknown Rune"
+		local newRuneName = newRuneDetails and newRuneDetails.name or L["Unknown Rune"]
 
 		table.insert(changeDetails, "" .. slotName .. ": " .. oldRuneName .. " -> |cffabdaeb" .. newRuneName)
 	end
@@ -3354,17 +3464,29 @@ function LoadRuneSet(setName, manual)
     -- If in manual mode, display the rune selection buttons for the user to apply runes manually
     if manual then
 	
-        print("|cff2da3cf[Rune Reminder]|r To load the '" .. setName .. "' Rune Set, apply the following runes:")
+        print(string.format("|cff2da3cf[%s]|r %s '%s' %s.",
+			L["Rune Reminder"],
+			L["To load the"],
+			setName,
+			L["Rune Set, apply the following runes:"]
+		))
+
 		for slotID, newRuneID in pairs(differences) do
-			local slotName = GetSlotName(slotID) or "Unknown Slot"
+			local slotName = GetSlotName(slotID) or L["Unknown Slot"]
 			local oldRuneDetails = currentRunes[slotID] and GetRuneDetailsFromID(currentRunes[slotID].skillLineAbilityID)
-			local oldRuneName = oldRuneDetails and oldRuneDetails.name or "No Rune"
+			local oldRuneName = oldRuneDetails and oldRuneDetails.name or L["No Rune"]
 
 			local newRuneDetails = GetRuneDetailsFromID(newRuneID)
-			local newRuneName = newRuneDetails and newRuneDetails.name or "Unknown Rune"
+			local newRuneName = newRuneDetails and newRuneDetails.name or L["Unknown Rune"]
 
 			-- Updated format to include [Rune Reminder] and slot names
-			print("|cff2da3cf[Rune Reminder]|r " .. slotName .. ": " .. oldRuneName .. " -> |cffabdaeb" .. newRuneName)
+			print(string.format("|cff2da3cf[%s]|r %s: %s -> |cffabdaeb%s",
+				L["Rune Reminder"],
+				slotName,
+				oldRuneName,
+				newRuneName
+			))
+
 		end
 		
     else
@@ -3376,8 +3498,8 @@ function LoadRuneSet(setName, manual)
     --StaticPopupDialogs["CONFIRM_LOAD_RUNE_SET"] = {
     --    text = "|cff2da3cf[Rune Reminder]|r \nLoading the rune set '" .. setName .. "' will make the following changes:\n" .. changesText ..
     --           "\n\nDo you wish to proceed? You must stand still while the runes are applied.",
-    --    button1 = "Yes",
-    --    button2 = "No",
+    --    button1 = L["Yes"],
+    --    button2 = L["No"],
     --    OnAccept = function()
     --        ApplyRuneSet(setToLoad, setName)  -- handle actual application logic here
     --    end,
@@ -3394,32 +3516,58 @@ local function ListRuneSets()
 
     local sets = RR_RuneSets[characterKey]
     if not sets or next(sets) == nil then
-        print("|cff2da3cf[Rune Reminder]|r No Rune Sets saved for", characterKey)
+        print(string.format("|cff2da3cf[%s]|r %s %s %s",
+			L["Rune Reminder"],
+			L["No Rune Sets saved for"],
+			characterKey,
+			"."
+		))
+
         return
     end
 
     for setName, setSlots in pairs(sets) do
-        print("|cff2da3cf[Rune Reminder]|r Rune Set:", setName)
-        for slotID, runeID in pairs(setSlots) do
-            local slotName = GetSlotName(slotID) 
-            local runeDetails = GetRuneDetailsFromID(runeID)
-            if runeDetails then
-                print("|cff2da3cf[Rune Reminder]|r  " .. slotName .. ": |cffabdaeb" .. runeDetails.name)
-            else
-                print("|cff2da3cf[Rune Reminder]|r  " .. slotName .. ": No rune")
-            end
-        end
+        print(string.format("|cff2da3cf[%s]|r %s: %s",
+			L["Rune Reminder"],
+			L["Rune Set:"],
+			setName
+		))
+		for slotID, runeID in pairs(setSlots) do
+			local slotName = GetSlotName(slotID)
+			local runeDetails = GetRuneDetailsFromID(runeID)
+			if runeDetails then
+				print(string.format("|cff2da3cf[%s]|r  %s: |cffabdaeb%s",
+					L["Rune Reminder"],
+					slotName,
+					runeDetails.name
+				))
+			else
+				print(string.format("|cff2da3cf[%s]|r  %s: %s",
+					L["Rune Reminder"],
+					slotName,
+					L["No rune"]
+				))
+			end
+		end
+
     end
 end
 
 
 StaticPopupDialogs["CONFIRM_DELETE_RUNE_SET"] = {
-    text = "|cff2da3cf[Rune Reminder]|r\nAre you sure you want to delete the Rune Set '%s'?",
-    button1 = "Yes",
-    button2 = "No",
-	enterClicksFirstButton = true,
+    text = function(self)
+        return string.format("|cff2da3cf[%s]|r\n%s '%s'?",
+            L["Rune Reminder"],
+            L["Are you sure you want to delete the Rune Set"],
+            self.data.setName or L["Invalid Set Name"]
+        )
+    end,
+
+    button1 = L["Yes"],
+    button2 = L["No"],
+    enterClicksFirstButton = true,
     OnAccept = function(self)
-        local setName = self.data  
+        local setName = self.data.setName  
         DeleteRuneSet(setName, true)  
     end,
     timeout = 0,
@@ -3438,14 +3586,17 @@ local function HandleSlashCommand(msg)
 		if settingName == "displayRunes" then
 			if state == "on" then
 				RuneReminder_CurrentSettings.displayRunes = true
-				print("|cff2da3cf[Rune Reminder]|r Runes Widget Enabled")
+				print(string.format("|cff2da3cf[%s]|r %s", L["Rune Reminder"], L["Runes Widget Enabled"]))
+
 			elseif state == "off" then 
 				RuneReminder_CurrentSettings.displayRunes = false
-				print("|cff2da3cf[Rune Reminder]|r Runes Widget Disabled")
+				print(string.format("|cff2da3cf[%s]|r %s", L["Rune Reminder"], L["Runes Widget Disabled"]))
+
 			else 
 			RuneReminder_CurrentSettings.displayRunes = not RuneReminder_CurrentSettings.displayRunes
-            local stateText = RuneReminder_CurrentSettings.displayRunes and "Enabled" or "Disabled"
-            print("|cff2da3cf[Rune Reminder]|cffffffff Runes Widget " .. stateText)
+            local stateText = RuneReminder_CurrentSettings.displayRunes and L["Enabled"] or L["Disabled"]
+            print(string.format("|cff2da3cf[%s]|cffffffff %s %s", L["Rune Reminder"], L["Runes Widget"], stateText))
+
 			end
 			if RuneReminderOptionsPanel:IsVisible() then
 				UpdateRunesWidgetCheckboxStates()
@@ -3456,17 +3607,17 @@ local function HandleSlashCommand(msg)
 			toggleKeepOpen()
         elseif state == "on" then
             RuneReminder_CurrentSettings[settingName] = true
-            print("|cff2da3cf[Rune Reminder]|r " .. settingName .. " Enabled")
+            print(string.format("|cff2da3cf[%s]|r %s %s %s", L["Rune Reminder"], settingName, L["Enabled"]))
 			if settingName == "altLoad" then
-			print("|cff2da3cf[Rune Reminder]|r|cffabdaeb WARNING:|cffffffff This should only be used if you are experiencing conflicts with other addons. You may need to open your character window for your runes to initially load.")
+			print(string.format("|cff2da3cf[%s]|r|cffabdaeb %s:|cffffffff %s", L["Rune Reminder"], L["WARNING"], L["This should only be used if you are experiencing conflicts with other addons. You may need to open your character window for your runes to initially load."]))
 			end
         elseif state == "off" then
             RuneReminder_CurrentSettings[settingName] = false
-            print("|cff2da3cf[Rune Reminder]|cffffffff " .. settingName .. " Disabled")
+            print(string.format("|cff2da3cf[%s]|cffffffff %s %s %s", L["Rune Reminder"], settingName, L["Disabled"]))
         else
             RuneReminder_CurrentSettings[settingName] = not RuneReminder_CurrentSettings[settingName]
             local stateText = RuneReminder_CurrentSettings[settingName] and "Enabled" or "Disabled"
-            print("|cff2da3cf[Rune Reminder]|cffffffff " .. settingName .. " " .. stateText)
+            print(string.format("|cff2da3cf[%s]|cffffffff %s %s", L["Rune Reminder"], settingName, stateText))
         end
 		
 		if command == "debugging" then
@@ -3507,10 +3658,10 @@ local function HandleSlashCommand(msg)
     elseif command == "keepOpen" or command == "keepopen" then
         toggleSetting("keepOpen", rest)
     elseif command == "settings" then
-        print("|cff2da3cf[Rune Reminder]|r Current Settings:")
+        print(string.format("|cff2da3cf[%s]|r %s", L["Rune Reminder"], L["Current Settings:"]))
         for setting, value in pairs(RuneReminder_CurrentSettings) do
 			if setting ~= "debugging" then 
-				print("|cff2da3cf[Rune Reminder]|cffffffff " .. setting .. ": " .. tostring(value))
+				print(string.format("|cff2da3cf[%s]|cffffffff %s: %s", L["Rune Reminder"], setting, tostring(value)))
 			end
         end
 	elseif command == "reapply" then
@@ -3531,19 +3682,19 @@ local function HandleSlashCommand(msg)
 		end
 	elseif command == "list" then
 	        -- List current runes
-		print("|cff2da3cf[Rune Reminder] |r|cffffffffCurrently Applied Runes:")
+			print(string.format("|cff2da3cf[%s]|r|cffffffff %s", L["Rune Reminder"], L["Currently Applied Runes:"]))
         for slotID, slotName in pairs(validSlots) do
             local runeInfo = currentRunes[slotID]
             if runeInfo then
-                print("|cff2da3cf[Rune Reminder] |r|cffffffff" .. slotName .. ":|r|cffabdaeb " .. runeInfo.name)
+                print(string.format("|cff2da3cf[%s]|r|cffffffff %s:|r|cffabdaeb %s", L["Rune Reminder"], slotName, runeInfo.name))
             else
-                print("|cff2da3cf[Rune Reminder] |r|cffffffff" .. slotName .. ":|r None")
+                print(string.format("|cff2da3cf[%s]|r|cffffffff %s:|r %s", L["Rune Reminder"], slotName, L["None"]))
             end
         end
 	elseif command == "reset" then
         -- Reset currentRunes
         --currentRunes = {}
-        print("|cff2da3cf[Rune Reminder]|r Runes Widget reset.")
+        print(string.format("|cff2da3cf[%s]|r %s", L["Rune Reminder"], L["Runes Widget reset."]))
 		initFrame(true)
 		ResetAllButtons()
 		--PrintCurrentRunes()
@@ -3553,7 +3704,7 @@ local function HandleSlashCommand(msg)
         -- Force update of currentRunes
         UpdateRunes(true, true)
 		ResetAllButtons()
-        print("|cff2da3cf[Rune Reminder]|r Runes updated:")
+        print(string.format("|cff2da3cf[%s]|r %s", L["Rune Reminder"], L["Runes updated:"]))
 		PrintCurrentRunes()
     elseif command == "options" then
         -- Directly open the Rune Reminder options panel
@@ -3561,10 +3712,10 @@ local function HandleSlashCommand(msg)
         InterfaceOptionsFrame_OpenToCategory(RuneReminderOptionsPanel) -- Call twice due to a Blizzard UI bug
 	elseif command == "rotate" then
 		rotate()		
-        print("|cff2da3cf[Rune Reminder]|r Rune Alignment set to " .. RuneReminder_CurrentSettings.runeAlignment)
+        print(string.format("|cff2da3cf[%s]|r %s %s %s", L["Rune Reminder"], L["Rune Alignment set to"], RuneReminder_CurrentSettings.runeAlignment))
     elseif command == "swapdir" then
 		swapDir()
-        print("|cff2da3cf[Rune Reminder]|r Rune Direction set to " .. RuneReminder_CurrentSettings.runeDirection)
+        print(string.format("|cff2da3cf[%s]|r %s %s %s", L["Rune Reminder"], L["Rune Direction set to"], RuneReminder_CurrentSettings.runeDirection))
 	--elseif command == "pos" then
 		--print("|cff2da3cf[Rune Reminder]|r Rune Widget Position X: " .. RuneReminder_CurrentSettings.xOffset .. " Y: ".. RuneReminder_CurrentSettings.yOffset)
 		--print("|cff2da3cf[Rune Reminder]|r To reposition, use /rr setpos <x> <y>")
@@ -3582,32 +3733,34 @@ local function HandleSlashCommand(msg)
     --        print("|cff2da3cf[Rune Reminder]|r Invalid position values. Usage: /rr setpos <x> <y>")
     --    end
 	elseif command == "howto" or command == "instructions" then
-        print("|cff2da3cf[Rune Reminder]|r Shift Click the widget (or type /rr options) to open the Options Panel. Here you can configure the notifications and runes widget to your preferences.")
-		print("|cff2da3cf[Rune Reminder]|r Left Click + Drag the anchor to position the Runes Widget. Ctrl+Click will lock/unlock it, and Right Click will hide the anchor.")
-        print("|cff2da3cf[Rune Reminder]|r Clicking on a gear slot expands the runes for that slot. Right clicking toggle expand/collapses all slots.")
-		print("|cff2da3cf[Rune Reminder]|r Select a rune to apply it to the appropriate equipment slot, no need to open the character window or confirm which item.")
-		print("|cff2da3cf[Rune Reminder]|r Type /rr help for more commands.")
+        print(string.format("|cff2da3cf[%s]|r %s", L["Rune Reminder"], L["Shift Click the widget (or type /rr options) to open the Options Panel. Here you can configure the notifications and runes widget to your preferences."]))
+		print(string.format("|cff2da3cf[%s]|r %s", L["Rune Reminder"], L["Left Click + Drag the anchor to position the Runes Widget. Ctrl+Click will lock/unlock it, and Right Click will hide the anchor."]))
+		print(string.format("|cff2da3cf[%s]|r %s", L["Rune Reminder"], L["Clicking on a gear slot expands the runes for that slot. Right-clicking toggle expand/collapses all slots."]))
+		print(string.format("|cff2da3cf[%s]|r %s", L["Rune Reminder"], L["Select a rune to apply it to the appropriate equipment slot, no need to open the character window or confirm which item."]))
+		print(string.format("|cff2da3cf[%s]|r %s", L["Rune Reminder"], L["Type /rr help for more commands."]))
+
    elseif command == "help" or command == "commands" then
 	
-        print("|cff2da3cf[Rune Reminder]|cffffffff Version " .. (version or "Unknown") .. " - Available Commands:")
-        print("|cff2da3cf[Rune Reminder]|r /rr |cffabdaeb[enable/on]|r - Enable popup notifications")
-        print("|cff2da3cf[Rune Reminder]|r /rr |cffabdaeb[disable/off]|r - Disable popup notifications")
-        print("|cff2da3cf[Rune Reminder]|r /rr |cffabdaebsound [on/off]|r - Toggle sound notifications")
-        print("|cff2da3cf[Rune Reminder]|r /rr |cffabdaeb[hands/legs/chest] [on/off]|r - Toggle notifications for specifc slot")
-		print("|cff2da3cf[Rune Reminder]|r /rr |cffabdaebreapply [on/off]|r - Toggle the Re-Apply Rune button in popups")
-		print("|cff2da3cf[Rune Reminder]|r /rr |cffabdaebviewrunes [on/off]|r - Toggle the View Runes button in popups")
-		print("|cff2da3cf[Rune Reminder]|r /rr |cffabdaeboptions|r - Loads the options window")
-		print("|cff2da3cf[Rune Reminder]|r /rr |cffabdaebdisplayrunes|r - Enables or disables the Runes Widget")
-		print("|cff2da3cf[Rune Reminder]|r /rr |cffabdaebreset|r - Resets the positioning of the Runes Widget")
-		print("|cff2da3cf[Rune Reminder]|r /rr |cffabdaebrotate|r - Rotates the Runes Widget")
-		print("|cff2da3cf[Rune Reminder]|r /rr |cffabdaebswapdir|r - Changes the direction of the rune buttons")
-        print("|cff2da3cf[Rune Reminder]|r /rr |cffabdaebsettings|r - Display current settings")
-		print("|cff2da3cf[Rune Reminder]|r /rr |cffabdaeblist|r - Display currently loaded runes")	
-		print("|cff2da3cf[Rune Reminder]|r /rr |cffabdaebsets|r - List the saved Rune Sets")
-		print("|cff2da3cf[Rune Reminder]|r /rr |cffabdaebsave {setname}|r - Save a Rune Set with the specific name")
-		print("|cff2da3cf[Rune Reminder]|r /rr |cffabdaebdelete {setname}|r - Delete a Rune Set with the specific name")		
-		print("|cff2da3cf[Rune Reminder]|r /rr |cffabdaeb[howto/instructions]|r - Basic how-to on using Rune Reminder")
-        print("|cff2da3cf[Rune Reminder]|r /rr |cffabdaeb[help/commands]|r - Show this help message")
+		print("|cff2da3cf[" .. L["Rune Reminder"] .. "]|cffffffff " .. L["Version"] .. " " .. (version or L["Unknown"]) .. " - " .. L["Available Commands:"])
+		print("|cff2da3cf[" .. L["Rune Reminder"] .. "]|r /rr |cffabdaeb[enable/on]|r - " .. L["Enable popup notifications"])
+		print("|cff2da3cf[" .. L["Rune Reminder"] .. "]|r /rr |cffabdaeb[disable/off]|r - " .. L["Disable popup notifications"])
+		print("|cff2da3cf[" .. L["Rune Reminder"] .. "]|r /rr |cffabdaebsound [on/off]|r - " .. L["Toggle sound notifications"])
+		print("|cff2da3cf[" .. L["Rune Reminder"] .. "]|r /rr |cffabdaeb[hands/legs/chest] [on/off]|r - " .. L["Toggle notifications for specific slot"])
+		print("|cff2da3cf[" .. L["Rune Reminder"] .. "]|r /rr |cffabdaebreapply [on/off]|r - " .. L["Toggle the Re-Apply Rune button in popups"])
+		print("|cff2da3cf[" .. L["Rune Reminder"] .. "]|r /rr |cffabdaebviewrunes [on/off]|r - " .. L["Toggle the View Runes button in popups"])
+		print("|cff2da3cf[" .. L["Rune Reminder"] .. "]|r /rr |cffabdaeboptions|r - " .. L["Loads the options window"])
+		print("|cff2da3cf[" .. L["Rune Reminder"] .. "]|r /rr |cffabdaebdisplayrunes|r - " .. L["Enables or disables the Runes Widget"])
+		print("|cff2da3cf[" .. L["Rune Reminder"] .. "]|r /rr |cffabdaebreset|r - " .. L["Resets the positioning of the Runes Widget"])
+		print("|cff2da3cf[" .. L["Rune Reminder"] .. "]|r /rr |cffabdaebrotate|r - " .. L["Rotates the Runes Widget"])
+		print("|cff2da3cf[" .. L["Rune Reminder"] .. "]|r /rr |cffabdaebswapdir|r - " .. L["Changes the direction of the rune buttons"])
+		print("|cff2da3cf[" .. L["Rune Reminder"] .. "]|r /rr |cffabdaebsettings|r - " .. L["Display current settings"])
+		print("|cff2da3cf[" .. L["Rune Reminder"] .. "]|r /rr |cffabdaeblist|r - " .. L["Display currently loaded runes"])
+		print("|cff2da3cf[" .. L["Rune Reminder"] .. "]|r /rr |cffabdaebsets|r - " .. L["List the saved Rune Sets"])
+		print("|cff2da3cf[" .. L["Rune Reminder"] .. "]|r /rr |cffabdaebsave {setname}|r - " .. L["Save a Rune Set with the specific name"])
+		print("|cff2da3cf[" .. L["Rune Reminder"] .. "]|r /rr |cffabdaebdelete {setname}|r - " .. L["Delete a Rune Set with the specific name"])
+		print("|cff2da3cf[" .. L["Rune Reminder"] .. "]|r /rr |cffabdaeb[howto/instructions]|r - " .. L["Basic how-to on using Rune Reminder"])
+		print("|cff2da3cf[" .. L["Rune Reminder"] .. "]|r /rr |cffabdaeb[help/commands]|r - " .. L["Show this help message"])
+
 	elseif command == "save" and rest ~= "" then -- Rune Sets 
 			SaveRuneSet(rest)
 	elseif command == "load" and rest ~= "" then
@@ -3620,8 +3773,8 @@ local function HandleSlashCommand(msg)
     else
         -- Default behavior for /rr
         local version = GetAddOnMetadata("RuneReminder", "Version")
-        print("|cff2da3cf[Rune Reminder]|r Addon " .. (RuneReminder_CurrentSettings.enabled and "Enabled" or "Disabled") .. " Version " .. (version or "Unknown"))
-        print("|cff2da3cf[Rune Reminder]|r Type |cffabdaeb/rr help|r for help and additional commands")
+        print("|cff2da3cf[Rune Reminder]|r Addon " .. (RuneReminder_CurrentSettings.enabled and L["Enabled"] or L["Disabled"]) .. " " .. L["Version"] ..  (version or L["Unknown"]))
+        print("|cff2da3cf[" .. L["Rune Reminder"] .. "]|r " .. L["Type"] .. " |cffabdaeb/rr help|r " .. L["for help and additional commands"])
     end
 end
 
@@ -3648,7 +3801,7 @@ local function OnEvent(self, event, ...)
                 ToggleCharacter("PaperDollFrame")
                 ToggleCharacter("PaperDollFrame")
 			else 
-				print("|cff2da3cf[Rune Reminder]|r|cffabdaeb WARNING:|cffffffff Alternate Loading enabled. Toggle this with /rr altload. This should only be used if you are experiencing conflicts with other addons. You may need to open your character window for your runes to initially load.")
+				print("|cff2da3cf[" .. L["Rune Reminder"] .. "]|r|cffabdaeb " .. L["WARNING"] .. ":|cffffffff " .. L["Alternate Loading enabled. Toggle this with /rr altload. This should only be used if you are experiencing conflicts with other addons. You may need to open your character window for your runes to initially load."])
             end
 			
 			C_Timer.After(1.5,function() 
@@ -3706,22 +3859,22 @@ local function OnEvent(self, event, ...)
                 local slotName = GetSlotName(category)
                 local shouldNotify = RuneReminder_CurrentSettings.enabled or RuneReminder_CurrentSettings[string.lower(slotName) .. "Notification"]
                 
-				print("|cff2da3cf[Rune Reminder]|r New "..slot.." run Learned: |cffabdaeb" ..rune.name )
+				pprint("|cff2da3cf[" .. L["Rune Reminder"] .. "]|r " .. L["New "] .. slot .. " " .. L["rune Learned:"] .. " |cffabdaeb" .. rune.name .. "|r")
 				
                 if shouldNotify then
                     local currentRune = currentRunes[category]
-                    local dialogText = "|cff2da3cf[Rune Reminder]|cffffffff You've learned a new " .. slotName .. " rune: |cffabdaeb" .. rune.name .. "|r."
+					local dialogText = "|cff2da3cf[" .. L["Rune Reminder"] .. "]|cffffffff " .. L["You've learned a new "] .. slotName .. L[" rune:"] .. "|r" .. "|cffabdaeb" .. rune.name .. "|r."
                     
                     if currentRune then
-                        dialogText = dialogText .. " Replace |cffabdaeb" .. currentRune.name .. "|cffffffff with |cffabdaeb" .. rune.name .. "|cffffffff?"
+                        dialogText = dialogText .. L[" Replace "] .. "|cffabdaeb" .. currentRune.name .. "|cffffffff" .. L[" with "] .. "|cffabdaeb" .. rune.name .. "|cffffffff" .. L["?"]
                     else
-                        dialogText = dialogText .. " Engrave " .. slotName .. "?"
+                        dialogText = dialogText .. L[" Engrave "] .. slotName .. "?"
                     end
 
                     StaticPopupDialogs["ENGRAVE_NEW_RUNE"] = {
                         text = dialogText,
-                        button1 = "Yes",
-                        button2 = "No",
+                        button1 = L["Yes"],
+                        button2 = L["No"],
                         OnAccept = function()
                             EngraveRune(slotName, rune.skillLineAbilityID)
                         end,
@@ -3833,7 +3986,12 @@ function ShowHideAnchor()
 				local lockAction = RuneReminder_CurrentSettings.anchorLocked and "unlock" or "lock"
 				local visibilityAction = RuneReminder_CurrentSettings.anchorVisible and "hide" or "show"
 
-				GameTooltip:SetText("|cff2da3cfRune Reminder|r|cffabdaeb\nLeft |rClick + |cffabdaebDrag|r to |cffabdaebmove|r.\n|cffabdaebLeft |rClick + |cffabdaebCtrl|r to |cffabdaeblock/unlock|r.\n|cffabdaebLeft |rClick + |cffabdaebShift|r to |cffabdaebopen Options|r.\n|cffabdaebRight |rClick to |cffabdaebhide the anchor|r.", 1, 1, 1, 1, true)
+				GameTooltip:SetText(string.format("|cff2da3cf[%s]|r|cffabdaeb\n%s + %s %s %s.\n%s + %s %s %s.\n%s + %s %s %s.\n%s %s %s.", 
+				L["Rune Reminder"], 
+				L["Left"], L["Click"], L["Drag"], L["to"],
+				L["Left"], L["Click"], L["Ctrl"], L["to"],
+				L["Left"], L["Click"], L["Shift"], L["to"],
+				L["Right"], L["Click"], L["hide the anchor"]), 1, 1, 1, 1, true)
 				GameTooltip:Show()
 
 			end)
@@ -3892,9 +4050,9 @@ end)
 
 -- Add StaticPopupDialog for saving rune set
 StaticPopupDialogs["SAVE_RUNE_SET"] = {
-    text = "Enter a name for the Rune Set:",
-    button1 = "Save",
-    button2 = "Cancel",
+    text = L["Enter a name for the Rune Set:"],
+    button1 = L["Save"],
+    button2 = L["Cancel"],
     hasEditBox = true,
 	OnShow = function(self)
         self.editBox:SetFocus()
@@ -3919,9 +4077,9 @@ StaticPopupDialogs["SAVE_RUNE_SET"] = {
 }
 
 StaticPopupDialogs["CONFIRM_RESET_SETTINGS"] = {
-    text = "Are you sure you want to reset the settings to default?",
-    button1 = "Yes",
-    button2 = "No",
+    text = L["Are you sure you want to reset the settings to default?"],
+    button1 = L["Yes"],
+    button2 = L["No"],
     OnAccept = function() ResetSettings() end,
     timeout = 0,
     whileDead = true,
@@ -3929,9 +4087,9 @@ StaticPopupDialogs["CONFIRM_RESET_SETTINGS"] = {
     preferredIndex = 3,
 }
 StaticPopupDialogs["CONFIRM_DELETE_SETTINGS"] = {
-    text = "Are you sure you want to delete the settings and revert to default?",
-    button1 = "Yes",
-    button2 = "No",
+    text = L["Are you sure you want to delete the settings and revert to default?"],
+    button1 = L["Yes"],
+    button2 = L["No"],
     OnAccept = function() ResetSettings() end,
     timeout = 0,
     whileDead = true,
