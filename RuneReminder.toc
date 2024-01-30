@@ -5,5 +5,23 @@
 ## Version: 0.7.7.2
 ## SavedVariables: RuneReminderSettings, RR_RuneSets, RR_Profiles, RR_CharacterProfiles, RuneReminderSharedSettings
 ## SavedVariablesPerCharacter: RuneReminderCharacterSettings
+
+# Library files
+#@no-lib-strip@
+Libs\AceLocale-3.0\AceLocale-3.0.xml
+#@end-no-lib-strip@
+
+# Locale files
+Locales\Locale-enUS.lua
+Locales\Locale-deDE.lua
+Locales\Locale-esES.lua
+Locales\Locale-frFR.lua
+Locales\Locale-koKR.lua
+Locales\Locale-ruRU.lua
+Locales\Locale-zhCN.lua
+Locales\Locale-zhTW.lua
+Locales\Locale-ptBR.lua
+
+# Core files
 LibStub.lua
 RuneReminder.lua
