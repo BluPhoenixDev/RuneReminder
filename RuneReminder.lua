@@ -223,12 +223,12 @@ local function initFrame(reset)
 				local lockAction = RuneReminder_CurrentSettings.anchorLocked and "unlock" or "lock"
 				local visibilityAction = RuneReminder_CurrentSettings.anchorVisible and "hide" or "show"
 
-				GameTooltip:SetText(string.format("|cff2da3cf[%s]|r|cffabdaeb\n%s %s %s.\n%s %s %s %s.\n%s %s %s %s.\n%s %s %s.",
-                                    L["Rune Reminder"],
-                                    L["Left"], L["Click"], L["Drag"], 
-                                    L["Left"], L["Click"], L["Ctrl"], L["to"], 
-                                    L["Left"], L["Click"], L["Shift"], L["to"], 
-                                    L["Right"], L["Click"], L["hide the anchor"]), 1, 1, 1, 1, true)
+				GameTooltip:SetText(string.format("|cff2da3cf[%s]|r|cffabdaeb\n%s|r %s |cffabdaeb%s|r.\n|cffabdaeb%s |r+ |cffabdaeb%s|r %s |cffabdaeb%s|r.\n|cffabdaeb%s |r+ |cffabdaeb%s |r%s |cffabdaeb%s|r.\n|cffabdaeb%s |r%s |cffabdaeb%s|r.", 
+				L["Rune Reminder"], 
+				L["Left Click"], L["to"], L["Drag"],
+				L["Left Click"], L["Ctrl"], L["to"], L["lock/unlock"],
+				L["Left Click"], L["Shift"], L["to"], L["open the Options Panel"],
+				L["Right Click"], L["to"], L["hide the anchor"]), 1, 1, 1, 1, true)
 
 				GameTooltip:Show()
 			end)
@@ -239,8 +239,6 @@ local function initFrame(reset)
 			frame:SetScript("OnEnter", nil)
 			frame:SetScript("OnLeave", nil)
 		end
-
-
 		frame:Show()
 	else 
 		frame:Hide()
@@ -1004,10 +1002,10 @@ local function CreateRuneSetsButton()
 		 GameTooltip:SetOwner(button, RuneReminder_CurrentSettings.tooltipAnchor)
 				GameTooltip:ClearLines()
 				GameTooltip:AddLine(string.format("|cff2da3cf%s|r %s\n", L["Rune Reminder"], L["Rune Sets"]), 1, 1, 1)
-				GameTooltip:AddLine(string.format("|cffabdaeb%s |r%s |cffabdaeb%s |r%s |cffabdaeb%s", L["Left Click"], L["to Save"], L["or Alt"], L["to Delete"], L["Rune Sets"]), 1, 1, 1)
+				GameTooltip:AddLine(string.format("|cffabdaeb%s |r%s |cffabdaeb%s |r%s \n|cffabdaeb%s %s|r %s |cffabdaeb%s|r %s", L["Left Click"], L["to"], L["Save or Load"], L["Rune Sets"], L["Alt"], L["Click"], L["to"], L["Delete"], L["Rune Sets"]), 1, 1, 1)
 
 				if RuneReminder_CurrentSettings.toggleSets then
-					GameTooltip:AddLine(string.format("|cffabdaeb%s|r %s |cffabdaeb%s", L["Right Click"], L["to Toggle"], L["Rune Slots"]), 1, 1, 1)
+					GameTooltip:AddLine(string.format("|cffabdaeb%s|r %s |cffabdaeb%s|r %s", L["Right Click"], L["to"], L["Toggle"], L["Rune Slots"]), 1, 1, 1)
 				end
 			GameTooltip:Show()
 		end)
@@ -2084,7 +2082,7 @@ local function CreateOptionsPanel()
 	profileDropdown:SetScript("OnEnter", function(self)
 		GameTooltip:SetOwner(self, "ANCHOR_TOPLEFT") 
 
-		local tooltipText = string.format("%s\n%s", L["Switch between character specific settings and the Shared Profile."], L["Shared Profile is the default for new characters and shared by all that use it."])
+		local tooltipText = string.format("%s\n%s", L["Switch between character-specific settings and the Shared Profile."], L["Shared Profile is the default for new characters and shared by all that use it."])
 		GameTooltip:SetText(tooltipText)  -- true for wrap text
 		
 		GameTooltip:Show()
@@ -2395,45 +2393,61 @@ local function CreateOptionsPanel()
 	yOffset = yOffset - 20
 
 	local runeTextureLabel = scrollChild:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
-	runeTextureLabel:SetPoint("TOPLEFT", widgetLabel, "BOTTOMLEFT", 5, -10)  
+	runeTextureLabel:SetPoint("TOPLEFT", widgetLabel, "BOTTOMLEFT", 330, -40)  
 	runeTextureLabel:SetText(L["Rune Texture:"])
 	local runeTextureDropdown = CreateFrame("Frame", "RuneReminderRuneTextureDropdown", scrollChild, "UIDropDownMenuTemplate")
-	runeTextureDropdown:SetPoint("TOPLEFT", runeTextureLabel, "RIGHT", 0, 12)  
+	runeTextureDropdown:SetPoint("TOPLEFT", runeTextureLabel, "BOTTOMLEFT", -20, -5)  
 	UIDropDownMenu_SetWidth(runeTextureDropdown, 150)
 
-	-- Left Column
-	local displayRunesCheckbox = CreateCheckbox("displayRunes", "left", yOffset - 30, L["Display Runes Widget"], L["Toggle the display of the Runes Widget"])
-	local setEngraveOnLoadCheckbox = CreateCheckbox("setEngraveOnLoad", "left", yOffset - 60, L["Begin Engraving Immediately (Rune Sets)"], L["If enabled, selecting to Load a Rune Set will immediately attempt to begin engraving."])
-	local toggleRuneSetsCheckbox = CreateCheckbox("toggleSets", "left", yOffset - 90, L["Toggle Rune Slots by Right Clicking on Rune Sets"], L["If enabled, right clicking the Rune Sets button will expand/collapse the Runes Widget."])
-	local disableGlowCheckbox = CreateCheckbox("disableGlow", "left", yOffset - 120, L["Disable Engraved Glow"], L["Removes the custom glow texture on engraved rune slots."] .. "\n\n" .. L["NOTE: The Checked state will overlap with this. Most users will not want both enabled together."])
-	local enableCheckedCheckbox = CreateCheckbox("enableChecked", "left", yOffset - 150, L["Set Checked State"], L["Enables the Checked state, which gives an alternate glow effect. This effect can be stylized in Masque."] .. "\n\n" .. L["NOTE: The Checked state will overlap with the custom Glow texture. Most users will not want both enabled together."])
-	local toggleRuneSetsTogglesAllCheckbox = CreateCheckbox("toggleSetsTogglesAll", "left", yOffset - 210, L["Rune Sets Toggle Expands All"], L["If enabled, when right clicking the Rune Sets button, all slots will default to expanded/displayed."])
-	local hideUnknownCheckbox = CreateCheckbox("hideUnknownRunes", "left", yOffset - 240, L["Hide Unknown Runes"], L["Prevents runes that have not been found from displaying in the Runes Widget"])
-	local keepOpenCheckbox = CreateCheckbox("keepOpen", "left", yOffset - 270, L["Keep Runes Open (during/after engraving)"], L["Disable auto-collapse when applying a new rune."])
-	local disableLeftClickCheckbox = CreateCheckbox("disableLeftClickKeepOpen", "left", yOffset - 300, L["Disable LeftClick-to-Toggle w/ Keep Open"], L["Prevents normal left clicks from collapsing a column/row when Keep Open is enabled."])
-	local autoToggleOnHoverCheckbox = CreateCheckbox("autoToggleOnHover", "left", yOffset - 330, L["Auto Toggle on Hover"], L["Automatically show/hide runes when hovering over runes/slot buttons."])
-	local rotateRunesCheckbox = CreateCheckbox("rotateRunes", "left", yOffset - 360, L["Rotate Runes"], L["Toggle between Horizontal and Vertical alignment."])
-	local swapDirectionCheckbox = CreateCheckbox("swapDirection", "left", yOffset - 390, L["Swap Direction"], L["Swap the direction the runes expand in the widget."])
-	local displayCooldownCheckbox = CreateCheckbox("displayCooldown", "left", yOffset - 420, L["Display Cooldown Animation"], L["Display cooldown animation on engraved runes."])
-	local displayAnchorCheckbox = CreateCheckbox("anchorVisible", "left", yOffset - 480, L["Display Positioning Anchor"], L["Controls display of the Anchor for positioning. This can also be toggled by Right Clicking the anchor."] .. "\n\n" .. L["NOTE: Even when hidden, it's grab/draggable. Lock positioning below if you do not want it to be."])
 
-	-- Right Column
-	local displayRuneSetsCheckbox = CreateCheckbox("displayRuneSets", "right", yOffset, L["Display Rune Sets"], L["Toggle the display of the Rune Sets button"])
-	local glowTextureLabel = scrollChild:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
-	glowTextureLabel:SetPoint("TOPLEFT", enableCheckedCheckbox, "BOTTOMLEFT", 5, -10)  
-	glowTextureLabel:SetText(L["Glow Texture:"])
+	-- 
+	local displayAnchorCheckbox = CreateCheckbox("anchorVisible", "left", yOffset, L["Display Positioning Anchor"], L["Controls display of the Anchor for positioning. This can also be toggled by Right Clicking the anchor."] .. "\n\n" .. L["NOTE: Even when hidden, it's grab/draggable. Lock positioning below if you do not want it to be."])
+	local lockAnchorCheckbox = CreateCheckbox("anchorLocked", "right", yOffset, L["Lock Positioning Anchor"], L["Locks the anchor in place, preventing accidental click/drag repositioning."])
+	yOffset = yOffset - 40
 	
-	local glowOpacitySlider = CreateSliderWithTextbox("glowOpacity", L["Glow Opacity"], 0.0, 1.0, 0.1, 355, yOffset - 150, 175)
-	local glowTextureDropdown = CreateFrame("Frame", "RuneReminderGlowTextureDropdown", scrollChild, "UIDropDownMenuTemplate")
-	glowTextureDropdown:SetPoint("TOPLEFT", glowTextureLabel, "RIGHT", -10, 12)  
-	local simpleTooltipsCheckbox = CreateCheckbox("simpleTooltips", "right", yOffset - 240, L["Simple Tooltips"], L["Removes the Engraving Tooltips from the Rune Slots"])
-	local displayCooldownTextCheckbox = CreateCheckbox("displayCooldownText", "right", yOffset - 420, L["Display Cooldown Text"], L["Display time remaining on cooldown for engraved runes. Turn this off if you're seeing doubled up numbers from another addon."])
-	local tooltipAnchorLabel = scrollChild:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
-	tooltipAnchorLabel:SetPoint("TOPLEFT", displayCooldownCheckbox, "BOTTOMLEFT", 5, -10) 
-	tooltipAnchorLabel:SetText(L["Tooltip Position:"])
-	local lockAnchorCheckbox = CreateCheckbox("anchorLocked", "right", yOffset - 480, L["Lock Positioning Anchor"], L["Locks the anchor in place, preventing accidental click/drag repositioning."])
+	local displayRuneSetsCheckbox = CreateCheckbox("displayRuneSets", "left", yOffset, L["Display Rune Sets"], L["Toggle the display of the Rune Sets button"])
+	local setEngraveOnLoadCheckbox = CreateCheckbox("setEngraveOnLoad", "left", yOffset - 30, L["Begin Engraving Immediately (Rune Sets)"], L["If enabled, selecting to Load a Rune Set will immediately attempt to begin engraving."])
+	local toggleRuneSetsCheckbox = CreateCheckbox("toggleSets", "left", yOffset - 60, L["Toggle Rune Slots by Right Clicking on Rune Sets"], L["If enabled, right clicking the Rune Sets button will expand/collapse the Runes Widget."])
+	local toggleRuneSetsTogglesAllCheckbox = CreateCheckbox("toggleSetsTogglesAll", "left", yOffset - 90, L["Rune Sets Toggle Expands All"], L["If enabled, when right clicking the Rune Sets button, all slots will default to expanded/displayed."])
+	
+	local displayRunesCheckbox = CreateCheckbox("displayRunes", "left", yOffset - 130, L["Display Runes Widget"], L["Toggle the display of the Runes Widget"])
+	local hideUnknownCheckbox = CreateCheckbox("hideUnknownRunes", "right", yOffset - 130, L["Hide Unknown Runes"], L["Prevents runes that have not been found from displaying in the Runes Widget"])
 
-	yOffset = yOffset - 610
+	local displayCooldownCheckbox = CreateCheckbox("displayCooldown", "left", yOffset - 160, L["Display Cooldown Animation"], L["Display cooldown animation on engraved runes."])
+	local displayCooldownTextCheckbox = CreateCheckbox("displayCooldownText", "right", yOffset - 160, L["Display Cooldown Text"], L["Display time remaining on cooldown for engraved runes. Turn this off if you're seeing doubled up numbers from another addon."])
+	
+	
+	local enableCheckedCheckbox = CreateCheckbox("enableChecked", "left", yOffset - 190, L["Set Checked State"], L["Enables the Checked state, which gives an alternate glow effect. This effect can be stylized in Masque."] .. "\n\n" .. L["NOTE: The Checked state will overlap with the custom Glow texture. Most users will not want both enabled together."])
+	local disableGlowCheckbox = CreateCheckbox("disableGlow", "right", yOffset - 190, L["Disable Engraved Glow"], L["Removes the custom glow texture on engraved rune slots."] .. "\n\n" .. L["NOTE: The Checked state will overlap with this. Most users will not want both enabled together."])
+
+	local glowOpacitySlider = CreateSliderWithTextbox("glowOpacity", L["Glow Opacity"], 0.0, 1.0, 0.1, 30, yOffset - 240, 175)
+
+	local glowTextureLabel = scrollChild:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
+	glowTextureLabel:SetPoint("LEFT", disableGlowCheckbox, "BOTTOMLEFT", 0, -10)  
+	glowTextureLabel:SetText(L["Glow Texture:"])
+
+	local glowTextureDropdown = CreateFrame("Frame", "RuneReminderGlowTextureDropdown", scrollChild, "UIDropDownMenuTemplate")
+	glowTextureDropdown:SetPoint("TOPLEFT", glowTextureLabel, "BOTTOMLEFT", -20, -5)  
+
+	local simpleTooltipsCheckbox = CreateCheckbox("simpleTooltips", "left", yOffset - 290, L["Simple Tooltips"], L["Removes the Engraving Tooltips from the Rune Slots"])
+	local tooltipAnchorLabel = scrollChild:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
+	tooltipAnchorLabel:SetPoint("TOPLEFT", glowTextureLabel, "BOTTOMLEFT", 0, -55) 
+	tooltipAnchorLabel:SetText(L["Tooltip Position:"])
+	local tooltipAnchorDropdown = CreateFrame("Frame", "RuneReminderTooltipAnchorDropdown", scrollChild, "UIDropDownMenuTemplate")
+	tooltipAnchorDropdown:SetPoint("TOPLEFT", tooltipAnchorLabel, "BOTTOMLEFT", -20, -5)  
+	
+	
+	local autoToggleOnHoverCheckbox = CreateCheckbox("autoToggleOnHover", "left", yOffset - 330, L["Auto Toggle on Hover"], L["Automatically show/hide runes when hovering over runes/slot buttons."])
+	
+	
+	local keepOpenCheckbox = CreateCheckbox("keepOpen", "left", yOffset - 360, L["Keep Runes Open (during/after engraving)"], L["Disable auto-collapse when applying a new rune."])
+	local disableLeftClickCheckbox = CreateCheckbox("disableLeftClickKeepOpen", "left", yOffset - 390, L["Disable LeftClick-to-Toggle w/ Keep Open"], L["Prevents normal left clicks from collapsing a column/row when Keep Open is enabled."])
+	
+	local rotateRunesCheckbox = CreateCheckbox("rotateRunes", "left", yOffset - 430, L["Rotate Runes"], L["Toggle between Horizontal and Vertical alignment."])
+	local swapDirectionCheckbox = CreateCheckbox("swapDirection", "left", yOffset - 460, L["Swap Direction"], L["Swap the direction the runes expand in the widget."])
+	
+	
+	yOffset = yOffset - 540
 
 	glowTextureDropdown.initialize = function(self, level)
 			local info = UIDropDownMenu_CreateInfo()
@@ -2494,8 +2508,6 @@ local function CreateOptionsPanel()
 	end
 
 	-- Add a dropdown for tooltip anchor setting
-	local tooltipAnchorDropdown = CreateFrame("Frame", "RuneReminderTooltipAnchorDropdown", scrollChild, "UIDropDownMenuTemplate")
-	tooltipAnchorDropdown:SetPoint("TOPLEFT", tooltipAnchorLabel, "RIGHT", -10, 12)  
 	tooltipAnchorDropdown.initialize = function(self, level)
 			local info = UIDropDownMenu_CreateInfo()
 			for _, anchor in ipairs({"ANCHOR_TOP", "ANCHOR_RIGHT", "ANCHOR_BOTTOM", "ANCHOR_LEFT", "ANCHOR_TOPRIGHT", "ANCHOR_BOTTOMRIGHT", "ANCHOR_TOPLEFT", "ANCHOR_BOTTOMLEFT", "ANCHOR_CURSOR"}) do
@@ -2667,7 +2679,7 @@ local function CreateOptionsPanel()
 
 	-- Sliders
 	local widgetButtonSizeLabel = scrollChild:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
-	widgetButtonSizeLabel:SetPoint("TOPLEFT", 16, yOffset + 60)
+	widgetButtonSizeLabel:SetPoint("TOPLEFT", 16, yOffset + 40)
 	widgetButtonSizeLabel:SetText(L["Button Size & Padding"])
 	local widgetPosLabel = scrollChild:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
 	widgetPosLabel:SetPoint("TOPLEFT", 470, yOffset + 40)
@@ -2682,10 +2694,10 @@ local function CreateOptionsPanel()
 	--yOffset = yOffset - 60 
 
 	-- Create buttonSizeSlider with textbox
-	local buttonSizeSlider, buttonSizeTextbox = CreateSliderWithTextbox("buttonSize", L["Button Size"], 5, 100, 1, 16, yOffset, 400)
+	local buttonSizeSlider, buttonSizeTextbox = CreateSliderWithTextbox("buttonSize", L["Button Size"], 5, 100, 1, 26, yOffset, 350)
 	yOffset = yOffset - 60
 	
-	local paddingSlider, paddingTextbox = CreateSliderWithTextbox("buttonPadding", L["Button Padding"], 0, 10, 1, 16, yOffset, 400)
+	local paddingSlider, paddingTextbox = CreateSliderWithTextbox("buttonPadding", L["Button Padding"], 0, 10, 1, 26, yOffset, 350)
 		
 	-- Update the size of the scroll child based on the number of elements
 	scrollChild:SetSize(600, math.abs(yOffset))
@@ -2884,7 +2896,7 @@ local function CreateOptionsPanel()
 	local resetButton = CreateFrame("Button", "ResetPositionButton", scrollChild, "UIPanelButtonTemplate")
 	resetButton:SetText(L["Reset"])
 	resetButton:SetSize(50, 20)
-	resetButton:SetPoint("TOP", scrollChild, "TOP", 250, yOffset + 25) 
+	resetButton:SetPoint("TOP", scrollChild, "TOP", 225, yOffset + 25) 
 	resetButton:SetScript("OnClick", function()
 		initFrame(true)
 		UpdateActiveProfileSettings()
@@ -3986,12 +3998,12 @@ function ShowHideAnchor()
 				local lockAction = RuneReminder_CurrentSettings.anchorLocked and "unlock" or "lock"
 				local visibilityAction = RuneReminder_CurrentSettings.anchorVisible and "hide" or "show"
 
-				GameTooltip:SetText(string.format("|cff2da3cf[%s]|r|cffabdaeb\n%s + %s %s %s.\n%s + %s %s %s.\n%s + %s %s %s.\n%s %s %s.", 
+				GameTooltip:SetText(string.format("|cff2da3cf[%s]|r|cffabdaeb\n%s|r %s |cffabdaeb%s|r.\n|cffabdaeb%s |r+ |cffabdaeb%s|r %s |cffabdaeb%s|r.\n|cffabdaeb%s |r+ |cffabdaeb%s |r%s |cffabdaeb%s|r.\n|cffabdaeb%s |r%s |cffabdaeb%s|r.", 
 				L["Rune Reminder"], 
-				L["Left"], L["Click"], L["Drag"], L["to"],
-				L["Left"], L["Click"], L["Ctrl"], L["to"],
-				L["Left"], L["Click"], L["Shift"], L["to"],
-				L["Right"], L["Click"], L["hide the anchor"]), 1, 1, 1, 1, true)
+				L["Left Click"], L["to"], L["Drag"],
+				L["Left Click"], L["Ctrl"], L["to"], L["lock/unlock"],
+				L["Left Click"], L["Shift"], L["to"], L["open the Options Panel"],
+				L["Right Click"], L["to"], L["hide the anchor"]), 1, 1, 1, 1, true)
 				GameTooltip:Show()
 
 			end)

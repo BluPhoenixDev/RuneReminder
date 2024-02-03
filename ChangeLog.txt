@@ -1,3 +1,10 @@
+0.7.7.3
+----------
+* Added localization support, with initial translation for Brazilian Portugese (courtesy of Sir_Linho)
+* Reworked options panel layout 
+* minor text adjustments 
+
+
 0.7.7.2
 ----------
 * Fixed conflict with "Stat Weights Classic" addon
