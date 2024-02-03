@@ -11,7 +11,7 @@ local RuneSetsButton = nil
 local RuneSetsDropdownMenu = nil
 local currentProfile = nil
 
-local CreateRuneButton, CreateOrUpdateRuneSelectionButtons, RefreshRuneSelectionButtons, toggleKeepOpen, UpdateButtonBehaviors, ApplyRuneSet, LoadRuneSet, UpdateRuneSetsButtonState, SaveRuneSet, ResetAllButtons, InitializeRRSettings
+local CreateRuneButton, CreateOrUpdateRuneSelectionButtons, RefreshRuneSelectionButtons, toggleKeepOpen, UpdateButtonBehaviors, ApplyRuneSet, LoadRuneSet, UpdateRuneSetsButtonState, SaveRuneSet, ResetAllButtons, InitializeRRSettings, SetShownSlots, UpdateRunes
 local Masque, MSQ_Version = LibStub("Masque", true)
 local group
 local L = LibStub("AceLocale-3.0"):GetLocale("RuneReminder", false)
@@ -117,12 +117,31 @@ local defaults = {
 	runeSetsIcon = "Interface/Icons/INV_MISC_RUNE_06",
 	toggleSetsTogglesAll = false,
 	setEngraveOnLoad = true,
+	hideHeadSlot = false,
+	hideNeckSlot = false,
+	hideShoulderSlot = false,
+	hideChestSlot = false,
+	hideWaistSlot = false,
+	hideLegsSlot = false,
+	hideFeetSlot = false,
+	hideWristsSlot = false,
+	hideHandsSlot = false,
+	hideSlotsUntilLearned = false,
 }
-local validSlots = {
-    [10] = "Hands",
+local upcomingValidSlots = { 
 	[5] = "Chest",
-	[7] = "Legs"
+	[7] = "Legs",
+	[8] = "Feet",
+	[9] = "Wrists",
+	[10] = "Hands"
 }
+
+local validSlots = {
+	[5] = "Chest",
+	[7] = "Legs",
+	[10] = "Hands"
+}
+
 
 local allSlots = {
 	[1] = "Head",
@@ -133,8 +152,11 @@ local allSlots = {
 	[6] = "Waist",
 	[7] = "Legs",
 	[8] = "Feet",
-	[9] = "Wrist",
+	[9] = "Wrists",
 	[10] = "Hands"
+}
+
+local shownSlots = {
 }
 
 local currentRunes = {}
@@ -159,6 +181,27 @@ local function DeepCopy(orig)
         copy = orig
     end
     return copy
+end
+
+
+local function collect_keys(t, sort)
+	local _k = {}
+	for k in pairs(t) do
+		_k[#_k+1] = k
+	end
+	table.sort(_k, sort)
+	return _k
+end
+
+local function sortedPairs(t, sort)
+	local keys = collect_keys(t, sort)
+	local i = 0
+	return function()
+		i = i+1
+		if keys[i] then
+			return keys[i], t[keys[i]]
+		end
+	end
 end
 
 local function initFrame(reset) 
@@ -766,12 +809,14 @@ local function CreateOrUpdateRuneSelectionButtons(slotID, showRunes)
 
             button:SetPoint("TOPLEFT", slotButtons[slotID], "TOPLEFT", xPos, yPos)
 
-            if showRunes then
+            if showRunes and shownSlots[slotID] then
                 button:Show()
             else
                 button:Hide()
             end
         end
+
+		
 
         -- Remove extra buttons if any
         for i = #filteredRunes + 1, #runeSelectionButtons[slotID] do
@@ -782,6 +827,10 @@ local function CreateOrUpdateRuneSelectionButtons(slotID, showRunes)
                 runeSelectionButtons[slotID][i] = nil
             end
         end
+		
+		if not shownSlots[slotID] then
+			runeSelectionButtons[slotID] = nil
+		end
 	UpdateButtonBehaviors()
 end
 
@@ -795,6 +844,9 @@ function RefreshRuneSelectionButtons(slotID, forceshow)
         for _, rune in ipairs(learnedRunesInCategory) do
             learnedRunes[rune.skillLineAbilityID] = true
         end
+		
+		
+		
 		if slotID == nil or slotID == sID then
 			if runeSelectionButtons[sID] then
 				for _, button in ipairs(runeSelectionButtons[sID]) do
@@ -810,6 +862,10 @@ function RefreshRuneSelectionButtons(slotID, forceshow)
 			-- KeepOpen
 			if RuneReminder_CurrentSettings.keepOpen and RuneReminder_CurrentSettings.disableLeftClickKeepOpen or forceshow then  
 				wereButtonsVisible = true
+			end
+			
+			if not shownSlots[sID] then
+				wereButtonsVisible = false
 			end
 		-- Always refresh the buttons with correct data
 		CreateOrUpdateRuneSelectionButtons(sID, wereButtonsVisible)
@@ -1253,7 +1309,7 @@ local function CreateSlotButtons(forcereset)
 	local cooldownFontSize = buttonSize/2 
 
 
-    for slotID, slotName in pairs(validSlots) do
+    for slotID, slotName in sortedPairs(shownSlots) do
         local button = slotButtons[slotID]
 		
 		if debugging then
@@ -1362,7 +1418,7 @@ local function CreateSlotButtons(forcereset)
 		end
 
         
-        if displayRunes and button.texture then
+        if displayRunes then
             button:Show()
         else
             button:Hide()
@@ -1452,6 +1508,11 @@ end
 
 
 local function UpdateRuneSlotButton(slotID)
+
+	if not shownSlots[slotID] then
+		slotButtons[slotID] = nil
+	end
+
     local button = slotButtons[slotID]
     local runeInfo = currentRunes[slotID]
     local slotName = validSlots[slotID]
@@ -1577,6 +1638,18 @@ local function UpdateRuneSlotButton(slotID)
 				texture:SetTexture("Interface/PaperDoll/UI-PaperDoll-Slot-Legs") 
 			elseif slotName == "Hands" then 
 				texture:SetTexture("Interface/PaperDoll/UI-PaperDoll-Slot-Hands") 
+			elseif slotName == "Feet" then 
+				texture:SetTexture("Interface/PaperDoll/UI-PaperDoll-Slot-Feet") 
+			elseif slotName == "Waist" then 
+				texture:SetTexture("Interface/PaperDoll/UI-PaperDoll-Slot-Waist") 
+			elseif slotName == "Head" then 
+				texture:SetTexture("Interface/PaperDoll/UI-PaperDoll-Slot-Head") 
+			elseif slotName == "Neck" then 
+				texture:SetTexture("Interface/PaperDoll/UI-PaperDoll-Slot-Neck") 
+			elseif slotName == "Shoulder" then 
+				texture:SetTexture("Interface/PaperDoll/UI-PaperDoll-Slot-Shoulder") 
+			elseif slotName == "Wrists" then 
+				texture:SetTexture("Interface/PaperDoll/UI-PaperDoll-Slot-Wrists") 
 			else
 				texture:SetTexture("Interface/Icons/INV_Misc_QuestionMark") 
 			end
@@ -1963,6 +2036,13 @@ function InitializeRRSettings()
 	RR_Profiles = RR_Profiles or {}
 	RR_RuneSets = RR_RuneSets or {}
 	
+	--validSlots = {}
+	--for k in pairs(unorderedValidSlots) do
+	--	tinsert(validSlots, k)
+	--end
+	--table.sort(validSlots)
+	
+	
 
 	characterID = GetCharacterUniqueID()
 	local profile = RR_CharacterProfiles[characterID]
@@ -1996,6 +2076,8 @@ function InitializeRRSettings()
         end
     end
 	
+	SetShownSlots()
+	
 	if not RuneReminder_CurrentSettings.charLocation then
 		if RuneReminderSharedSettings.location and RuneReminderSharedSettings.location[characterID] then
 			RuneReminder_CurrentSettings.charLocation = RuneReminderSharedSettings.location[characterID]
@@ -2012,6 +2094,21 @@ function InitializeRRSettings()
 
 	InitializeCharacterSettings()
 	
+end
+
+function SetShownSlots(redraw) 
+	shownSlots = {}
+
+	for slotID, slotName in pairs(validSlots) do
+        if RuneReminder_CurrentSettings["hide"..slotName.."Slot"] == false then
+            shownSlots[slotID] = slotName
+        end
+    end
+	
+	if redraw then
+		UpdateRunes(false, false)
+		redrawWidget()
+	end
 end
 
 
@@ -2212,7 +2309,11 @@ local function CreateOptionsPanel()
 		if column == "left" then
 			x = 16
 		elseif column == "left-2" then
-			x = 186
+			x = 176
+		elseif column == "left-3" then
+			x = 336
+		elseif column == "left-4" then
+			x = 496
 		elseif column == "right" then
 			x = 340
 		elseif column == "right-2" then
@@ -2446,9 +2547,55 @@ local function CreateOptionsPanel()
 	local rotateRunesCheckbox = CreateCheckbox("rotateRunes", "left", yOffset - 430, L["Rotate Runes"], L["Toggle between Horizontal and Vertical alignment."])
 	local swapDirectionCheckbox = CreateCheckbox("swapDirection", "left", yOffset - 460, L["Swap Direction"], L["Swap the direction the runes expand in the widget."])
 	
+	yOffset = yOffset - 500
 	
-	yOffset = yOffset - 540
+	local hideChestSlotCheckbox = CreateCheckbox("hideChestSlot", "left", yOffset, L["Hide Chest Slot"], L["Hide the Chest Slot on the Runes Widget."])
+	hideChestSlotCheckbox:SetScript("OnClick", function(self)
+		RuneReminder_CurrentSettings.hideChestSlot = self:GetChecked()
+		SetShownSlots(true)
+		UpdateActiveProfileSettings()
+	end)
+	local hideLegsSlotCheckbox = CreateCheckbox("hideLegsSlot", "left-2", yOffset, L["Hide Legs Slot"], L["Hide the Legs Slot on the Runes Widget."])
+	hideLegsSlotCheckbox:SetScript("OnClick", function(self)
+		RuneReminder_CurrentSettings.hideLegsSlot = self:GetChecked()
+		SetShownSlots(true)
+		UpdateActiveProfileSettings()
+	end)
+	local hideHandsSlotCheckbox = CreateCheckbox("hideHandsSlot", "left-3", yOffset, L["Hide Hands Slot"], L["Hide the Hands Slot on the Runes Widget."])
+	hideHandsSlotCheckbox:SetScript("OnClick", function(self)
+		RuneReminder_CurrentSettings.hideHandsSlot = self:GetChecked()
+		SetShownSlots(true)
+		UpdateActiveProfileSettings()
+	end)
+	yOffset = yOffset - 30
+	
+	--local hideSlotsUntilLearnedCheckbox = CreateCheckbox("hideSlotsUntilLearned", "left", yOffset, L["Hide Slots Until Learned"], L["Hide each slot in the Runes Widget until at least 1 rune is known for that slot."])
+	--yOffset = yOffset - 30
+	
+	--local hideHeadSlotCheckbox = CreateCheckbox("hideHeadSlot", "left", yOffset, L["Hide Head Slot"], L["Hide the Head Slot on the Runes Widget."])
+	--yOffset = yOffset - 30
+	
+	--local hideWaistSlotCheckbox = CreateCheckbox("hideWaistSlot", "left-2", yOffset, L["Hide Waist Slot"], L["Hide the Waist Slot on the Runes Widget."])
+	--yOffset = yOffset - 30
+	
+	--local hideFeetSlotCheckbox = CreateCheckbox("hideFeetSlot", "left-3", yOffset, L["Hide Feet Slot"], L["Hide the Feet Slot on the Runes Widget."])
+	--yOffset = yOffset - 30
+	
+	--local hideWristsSlotCheckbox = CreateCheckbox("hideWristsSlot", "left-4", yOffset, L["Hide Wrists Slot"], L["Hide the Wrists Slot on the Runes Widget."])
+	--yOffset = yOffset - 30
+	
+	--local hideNeckSlotCheckbox = CreateCheckbox("hideNeckSlot", "left", yOffset, L["Hide Neck Slot"], L["Hide the Neck Slot on the Runes Widget."])
+	--yOffset = yOffset - 30
+	--local hideShoulderSlotCheckbox = CreateCheckbox("hideShoulderSlot", "left", yOffset, L["Hide Shoulder Slot"], L["Hide the Shoulder Slot on the Runes Widget."])
+	--yOffset = yOffset - 30
 
+	--yOffset = yOffset - 30
+	
+
+	--yOffset = yOffset - 30
+	yOffset = yOffset - 50
+
+	
 	glowTextureDropdown.initialize = function(self, level)
 			local info = UIDropDownMenu_CreateInfo()
 			for userVisible, path in pairs(glowTextures) do
@@ -2679,10 +2826,10 @@ local function CreateOptionsPanel()
 
 	-- Sliders
 	local widgetButtonSizeLabel = scrollChild:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
-	widgetButtonSizeLabel:SetPoint("TOPLEFT", 16, yOffset + 40)
+	widgetButtonSizeLabel:SetPoint("TOPLEFT", 16, yOffset + 30)
 	widgetButtonSizeLabel:SetText(L["Button Size & Padding"])
 	local widgetPosLabel = scrollChild:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
-	widgetPosLabel:SetPoint("TOPLEFT", 470, yOffset + 40)
+	widgetPosLabel:SetPoint("TOPLEFT", 470, yOffset + 30)
 	widgetPosLabel:SetText(L["Adjust Positioning"])	
 	
 	-- Create xOffsetSlider with textbox
@@ -2743,6 +2890,8 @@ local function CreateOptionsPanel()
 		UpdateNotificationCheckboxStates()
 		UpdateActiveProfileSettings()
 	end)
+
+	
 	
 	rotateRunesCheckbox:SetScript("OnClick", function(self)
         RuneReminder_CurrentSettings.runeAlignment = self:GetChecked() and "Vertical" or "Horizontal"
@@ -3128,7 +3277,7 @@ local function ShowRuneUpdatePopup(oldItemLink, oldRune, newItemLink, newRune, s
     StaticPopup_Show("RUNE_UPDATE_REMINDER")
 end
 
-local function UpdateRunes(includePopups, includeChat)
+function UpdateRunes(includePopups, includeChat)
     for slotID, slotName in pairs(validSlots) do
 		C_Engraving.ClearExclusiveCategoryFilter()
 		C_Engraving.SetSearchFilter("")

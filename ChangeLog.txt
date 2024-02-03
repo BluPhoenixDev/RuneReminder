@@ -1,3 +1,9 @@
+0.7.7.4
+----------
+* Added option to hide individual slots from the Runes Widget
+* Phase 2 prep 
+
+
 0.7.7.3
 ----------
 * Added localization support, with initial translation for Brazilian Portugese (courtesy of Sir_Linho)
