@@ -1,3 +1,8 @@
+0.7.7.6
+----------
+* minor settings adjustments for consistency
+
+
 0.7.7.5
 ----------
 * Preparation for future phases (New slots/runes are now ready and will be working immediately for Phase 2 launch) 
@@ -14,7 +19,7 @@
 
 0.7.7.3
 ----------
-* Added localization support, with initial translation for Brazilian Portugese (courtesy of Sir_Linho)
+* Added localization support, with initial translation for Portuguese  (courtesy of Sir_Linho)
 * Reworked options panel layout 
 * minor text adjustments 
 

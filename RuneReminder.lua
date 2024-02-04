@@ -12,6 +12,8 @@ local RuneSetsDropdownMenu = nil
 local currentProfile = nil
 
 local CreateRuneButton, CreateOrUpdateRuneSelectionButtons, RefreshRuneSelectionButtons, toggleKeepOpen, UpdateButtonBehaviors, ApplyRuneSet, LoadRuneSet, UpdateRuneSetsButtonState, SaveRuneSet, ResetAllButtons, InitializeRRSettings, SetShownSlots, UpdateRunes
+local UpdateSettingsFromProfile, SaveProfile, ApplyProfile, ResetSettings, ShowResetSettingsConfirmation, InitializeCharacterSettings, LoadProfileSettings, UpdateActiveProfileSettings
+local ResetSettingsToDefault, DeleteProfile, OnSettingChanged
 local Masque, MSQ_Version = LibStub("Masque", true)
 local group
 local L = LibStub("AceLocale-3.0"):GetLocale("RuneReminder", false)
@@ -1115,6 +1117,7 @@ local function CreateRuneSetsButton()
 					end
 					
 					ResetAllButtons()
+					UpdateActiveProfileSettings()
 				else 
 				
 				end
@@ -1234,6 +1237,8 @@ function UpdateRuneSetsButtonState(set, beginImmediately)
 										RuneReminder_CurrentSettings.displayRunes = not RuneReminder_CurrentSettings.displayRunes
 										if RuneReminderOptionsPanel:IsVisible() then
 											RuneReminderOptionsPanel:UpdateControls()
+										else 
+											UpdateActiveProfileSettings()
 										end
 										
 										if RuneReminder_CurrentSettings.displayRunes and RuneReminder_CurrentSettings.toggleSetsTogglesAll then
@@ -1930,9 +1935,6 @@ function UpdateButtonBehaviors()
     end
 end
 
-local UpdateSettingsFromProfile, SaveProfile, ApplyProfile, ResetSettings, ShowResetSettingsConfirmation, InitializeCharacterSettings, LoadProfileSettings, UpdateActiveProfileSettings
-local ResetSettingsToDefault, DeleteProfile, OnSettingChanged
-
 -- Function to update character settings or shared settings based on profile selection
 function UpdateSettingsFromProfile(profileName)
     if profileName == "SharedSettings" then
@@ -1964,6 +1966,7 @@ end
 function ResetSettings()
     RuneReminder_CurrentSettings = DeepCopy(defaults)
     print(L["Settings reset to default."])
+	UpdateActiveProfileSettings()
 end
 
 -- Initialize settings for a character
@@ -2680,6 +2683,7 @@ local function CreateOptionsPanel()
 					RuneReminder_CurrentSettings.runeSetsIcon = path
 					UIDropDownMenu_SetText(runeTextureDropdown, userVisible)
 					ResetAllButtons()
+					UpdateActiveProfileSettings()
 				end
 				if RuneReminder_CurrentSettings.runeSetsIcon == path then
 					info.checked = true
@@ -4230,7 +4234,10 @@ frame:SetScript("OnMouseDown", function(self, button)
 	
 	if RuneReminderOptionsPanel:IsVisible() then
 		RuneReminderOptionsPanel:UpdateControls()
+	else 
+		UpdateActiveProfileSettings()
 	end
+	
 end)
 
 
