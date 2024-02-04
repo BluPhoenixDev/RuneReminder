@@ -272,3 +272,5 @@ L["Hide the Legs Slot on the Runes Widget."] = "Esconder a Spaço de Pernas o Wi
 L["Hide the Feet Slot on the Runes Widget."] = "Esconder a Spaço de Pés o Widget de Runas."
 L["Hide the Wrists Slot on the Runes Widget."] = "Esconder a Spaço de Pulsos o Widget de Runas."
 L["Hide the Hands Slot on the Runes Widget."] = "Esconder a Spaço de Mãos o Widget de Runas."
+L["Hide Slots until Runes are found/available"] = "Esconder Spaço até Runas são encontradas/disponíveis"
+L["Hide each slot in the Runes Widget until at least 1 rune is known for that slot."] = "Esconder cada spaço até que pelo menos 1 runa seja conhecida para aquele spaço"

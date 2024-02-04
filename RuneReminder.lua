@@ -80,9 +80,6 @@ table.sort(runeTextureOrder)
 local defaults = {
     enabled = true,
     soundNotification = false,
-    handsNotification = true,
-    chestNotification = true,
-    legsNotification = true,
     alternateLoad = false,
     hideReapplyButton = false,
     hideViewRunesButton = true,
@@ -126,19 +123,20 @@ local defaults = {
 	hideFeetSlot = false,
 	hideWristsSlot = false,
 	hideHandsSlot = false,
-	hideSlotsUntilLearned = false,
+	hideUnknownSlots = true,
 }
-local upcomingValidSlots = { 
+
+
+
+local validSlots = {
+	[1] = "Head",
+	[2] = "Neck",
+	[3] = "Shoulder",
 	[5] = "Chest",
+	[6] = "Waist",
 	[7] = "Legs",
 	[8] = "Feet",
 	[9] = "Wrists",
-	[10] = "Hands"
-}
-
-local validSlots = {
-	[5] = "Chest",
-	[7] = "Legs",
 	[10] = "Hands"
 }
 
@@ -166,6 +164,7 @@ local runeSelectionButtons = {}
 local version = GetAddOnMetadata("RuneReminder", "Version")
 local runeDetailsMap = {} 
 local learnedRunes = {}
+local knownSlots = {}
 
 -- Function to deep copy tables
 local function DeepCopy(orig)
@@ -326,6 +325,7 @@ local function InitializeRuneDetails()
 
 	runeDetailsMap = {}
 	learnedRunes = {}
+	knownSlots = {}
 	
     local categories = C_Engraving.GetRuneCategories(false, false)
     for _, category in ipairs(categories) do
@@ -340,11 +340,11 @@ local function InitializeRuneDetails()
                 iconTexture = rune.iconTexture 
             }
         end
-
         -- Fetch only learned runes for this category and populate learnedRunes
         local learnedRunesInCategory = C_Engraving.GetRunesForCategory(category, true)
         for _, rune in ipairs(learnedRunesInCategory) do
             learnedRunes[rune.skillLineAbilityID] = true
+			knownSlots[category] = true
         end
     end
 end
@@ -483,6 +483,18 @@ local function EngraveRune(slot, skillLineAbilityID)
 			CharacterChestSlot:Click()
 		elseif slot == "Legs" then
 			CharacterLegsSlot:Click()
+		elseif slot == "Head" then
+			CharacterHeadSlot:Click()
+		elseif slot == "Neck" then
+			CharacterNeckSlot:Click()
+		elseif slot == "Feet" then
+			CharacterFeetSlot:Click()
+		elseif slot == "Shoulder" or slot == "Shoulders" then
+			CharacterShoulderSlot:Click()
+		elseif slot == "Wrists" or slot == "Wrist" then
+			CharacterWristSlot:Click()
+		elseif slot == "Waist" or slot == "Belt" then
+			CharacterWaistSlot:Click()
 		end
 
 		ReplaceEnchant()
@@ -843,6 +855,7 @@ function RefreshRuneSelectionButtons(slotID, forceshow)
 	    local learnedRunesInCategory = C_Engraving.GetRunesForCategory(sID, true)
         for _, rune in ipairs(learnedRunesInCategory) do
             learnedRunes[rune.skillLineAbilityID] = true
+			knownSlots[sID] = true
         end
 		
 		
@@ -1640,7 +1653,7 @@ local function UpdateRuneSlotButton(slotID)
 				texture:SetTexture("Interface/PaperDoll/UI-PaperDoll-Slot-Hands") 
 			elseif slotName == "Feet" then 
 				texture:SetTexture("Interface/PaperDoll/UI-PaperDoll-Slot-Feet") 
-			elseif slotName == "Waist" then 
+			elseif slotName == "Waist" or slotName == "Belt" then 
 				texture:SetTexture("Interface/PaperDoll/UI-PaperDoll-Slot-Waist") 
 			elseif slotName == "Head" then 
 				texture:SetTexture("Interface/PaperDoll/UI-PaperDoll-Slot-Head") 
@@ -1648,7 +1661,7 @@ local function UpdateRuneSlotButton(slotID)
 				texture:SetTexture("Interface/PaperDoll/UI-PaperDoll-Slot-Neck") 
 			elseif slotName == "Shoulder" then 
 				texture:SetTexture("Interface/PaperDoll/UI-PaperDoll-Slot-Shoulder") 
-			elseif slotName == "Wrists" then 
+			elseif slotName == "Wrists" or slotName == "Wrist" then 
 				texture:SetTexture("Interface/PaperDoll/UI-PaperDoll-Slot-Wrists") 
 			else
 				texture:SetTexture("Interface/Icons/INV_Misc_QuestionMark") 
@@ -1971,7 +1984,13 @@ function LoadProfileSettings(profile)
     if profile == "SharedSettings" then
         RuneReminder_CurrentSettings = RuneReminderSharedSettings
     elseif profile == characterID then
-        RuneReminder_CurrentSettings = RuneReminderCharacterSettings
+		if RuneReminderCharacterSettings then
+			RuneReminder_CurrentSettings = RuneReminderCharacterSettings
+		elseif RR_Profiles[profile] then
+			RuneReminder_CurrentSettings = DeepCopy(RR_Profiles[profile])
+		else
+			RuneReminder_CurrentSettings = RuneReminderSharedSettings
+		end
 	elseif profile and RR_Profiles[profile] then
 		RuneReminder_CurrentSettings = DeepCopy(RR_Profiles[profile])
     end
@@ -2030,7 +2049,7 @@ end
 function InitializeRRSettings()
 
 	RuneReminderSharedSettings = RuneReminderSharedSettings or RuneReminderSettings or defaults
-	--RuneReminder_CurrentSettings = RuneReminderCharacterSettings or RuneReminderSharedSettings
+	RuneReminder_CurrentSettings = RuneReminder_CurrentSettings or RuneReminderSharedSettings
 	
 	RR_CharacterProfiles = RR_CharacterProfiles or {}
 	RR_Profiles = RR_Profiles or {}
@@ -2100,9 +2119,11 @@ function SetShownSlots(redraw)
 	shownSlots = {}
 
 	for slotID, slotName in pairs(validSlots) do
-        if RuneReminder_CurrentSettings["hide"..slotName.."Slot"] == false then
-            shownSlots[slotID] = slotName
-        end
+		if knownSlots[slotID] == true or not RuneReminder_CurrentSettings.hideUnknownSlots then
+			if RuneReminder_CurrentSettings["hide"..slotName.."Slot"] == false then
+				shownSlots[slotID] = slotName
+			end
+		end
     end
 	
 	if redraw then
@@ -2473,16 +2494,17 @@ local function CreateOptionsPanel()
 
 	-- Left Column
 	local enabledCheckbox = CreateCheckbox("enabled", "left", yOffset, L["Enable All Popup Notifications"], L["Toggle the popups (for all slots) on or off."])
-	local soundCheckbox = CreateCheckbox("soundNotification", "left", yOffset - 30, L["Enable Sound Notifications"], L["Toggle sound notifications for rune changes."])
-	local handsCheckbox = CreateCheckbox("handsNotification", "left", yOffset - 60, L["Enable Hands Notifications"], L["Toggle notifications for changes in Hands slot."])
-	local chestCheckbox = CreateCheckbox("chestNotification", "left", yOffset - 90, L["Enable Chest Notifications"], L["Toggle notifications for changes in Chest slot."])
-	local legsCheckbox = CreateCheckbox("legsNotification", "left", yOffset - 120, L["Enable Legs Notifications"], L["Toggle notifications for changes in Legs slot."])
+	local hideReapplyButtonCheckbox = CreateCheckbox("hideReapplyButton", "left", yOffset - 30, L["Hide Re-Apply Button"], L["Toggle the visibility of the Re-Apply Rune button in popups."])
+	local hideViewRunesButtonCheckbox = CreateCheckbox("hideViewRunesButton", "left", yOffset - 60, L["Hide View Runes Button"], L["Toggle the visibility of the View Runes button in popups."])
+	local disableSwapCheckbox = CreateCheckbox("disableSwapNotify", "left", yOffset - 90, L["Disable when swapping to engraved gear"], L["Disable popup notification when equipping engraved gear."])
+	local disableRemoveCheckbox = CreateCheckbox("disableRemoveNotify", "left", yOffset - 120, L["Disable when removing gear"], L["Disable popup notification when removing gear (without a new piece replacing it)"])
+	--local handsCheckbox = CreateCheckbox("handsNotification", "left", yOffset - 60, L["Enable Hands Notifications"], L["Toggle notifications for changes in Hands slot."])
+	--local chestCheckbox = CreateCheckbox("chestNotification", "left", yOffset - 90, L["Enable Chest Notifications"], L["Toggle notifications for changes in Chest slot."])
+	--local legsCheckbox = CreateCheckbox("legsNotification", "left", yOffset - 120, L["Enable Legs Notifications"], L["Toggle notifications for changes in Legs slot."])
 
 	-- Right Column
-	local hideReapplyButtonCheckbox = CreateCheckbox("hideReapplyButton", "right", yOffset - 30, L["Hide Re-Apply Button"], L["Toggle the visibility of the Re-Apply Rune button in popups."])
-	local hideViewRunesButtonCheckbox = CreateCheckbox("hideViewRunesButton", "right", yOffset - 60, L["Hide View Runes Button"], L["Toggle the visibility of the View Runes button in popups."])
-	local disableSwapCheckbox = CreateCheckbox("disableSwapNotify", "right", yOffset - 90, L["Disable when swapping to engraved gear"], L["Disable popup notification when equipping engraved gear."])
-	local disableRemoveCheckbox = CreateCheckbox("disableRemoveNotify", "right", yOffset - 120, L["Disable when removing gear"], L["Disable popup notification when removing gear (without a new piece replacing it)"])
+	local soundCheckbox = CreateCheckbox("soundNotification", "right", yOffset - 30, L["Enable Sound Notifications"], L["Toggle sound notifications for rune changes."])
+
 
 	-- Runes Widget Options (Label)
 	yOffset = yOffset - 160
@@ -2549,6 +2571,14 @@ local function CreateOptionsPanel()
 	
 	yOffset = yOffset - 500
 	
+	local hideUnknownSlotsCheckbox = CreateCheckbox("hideUnknownSlots", "left", yOffset, L["Hide Slots until Runes are found/available"], L["Hide each slot in the Runes Widget until at least 1 rune is known for that slot."])
+	hideUnknownSlotsCheckbox:SetScript("OnClick", function(self)
+		RuneReminder_CurrentSettings.hideUnknownSlots = self:GetChecked()
+		SetShownSlots(true)
+		UpdateActiveProfileSettings()
+	end)
+	
+	yOffset = yOffset - 30
 	local hideChestSlotCheckbox = CreateCheckbox("hideChestSlot", "left", yOffset, L["Hide Chest Slot"], L["Hide the Chest Slot on the Runes Widget."])
 	hideChestSlotCheckbox:SetScript("OnClick", function(self)
 		RuneReminder_CurrentSettings.hideChestSlot = self:GetChecked()
@@ -2568,31 +2598,47 @@ local function CreateOptionsPanel()
 		UpdateActiveProfileSettings()
 	end)
 	yOffset = yOffset - 30
-	
+	local hideWaistSlotCheckbox = CreateCheckbox("hideWaistSlot", "left", yOffset, L["Hide Waist Slot"], L["Hide the Waist Slot on the Runes Widget."])
+		hideWaistSlotCheckbox:SetScript("OnClick", function(self)
+		RuneReminder_CurrentSettings.hideWaistSlot = self:GetChecked()
+		SetShownSlots(true)
+		UpdateActiveProfileSettings()
+	end)
+	local hideFeetSlotCheckbox = CreateCheckbox("hideFeetSlot", "left-2", yOffset, L["Hide Feet Slot"], L["Hide the Feet Slot on the Runes Widget."])
+		hideFeetSlotCheckbox:SetScript("OnClick", function(self)
+		RuneReminder_CurrentSettings.hideFeetSlot = self:GetChecked()
+		SetShownSlots(true)
+		UpdateActiveProfileSettings()
+	end)
+	local hideWristsSlotCheckbox = CreateCheckbox("hideWristsSlot", "left-3", yOffset, L["Hide Wrists Slot"], L["Hide the Wrists Slot on the Runes Widget."])
+		hideWristsSlotCheckbox:SetScript("OnClick", function(self)
+		RuneReminder_CurrentSettings.hideWristsSlot = self:GetChecked()
+		SetShownSlots(true)
+		UpdateActiveProfileSettings()
+	end)
+	yOffset = yOffset - 30
+	local hideHeadSlotCheckbox = CreateCheckbox("hideHeadSlot", "left", yOffset, L["Hide Head Slot"], L["Hide the Head Slot on the Runes Widget."])
+		hideHeadSlotCheckbox:SetScript("OnClick", function(self)
+		RuneReminder_CurrentSettings.hideHeadSlot = self:GetChecked()
+		SetShownSlots(true)
+		UpdateActiveProfileSettings()
+	end)
+	local hideNeckSlotCheckbox = CreateCheckbox("hideNeckSlot", "left-2", yOffset, L["Hide Neck Slot"], L["Hide the Neck Slot on the Runes Widget."])
+		hideNeckSlotCheckbox:SetScript("OnClick", function(self)
+		RuneReminder_CurrentSettings.hideNeckSlot = self:GetChecked()
+		SetShownSlots(true)
+		UpdateActiveProfileSettings()
+	end)
+	local hideShoulderSlotCheckbox = CreateCheckbox("hideShoulderSlot", "left-3", yOffset, L["Hide Shoulder Slot"], L["Hide the Shoulder Slot on the Runes Widget."])
+		hideShoulderSlotCheckbox:SetScript("OnClick", function(self)
+		RuneReminder_CurrentSettings.hideShoulderSlot = self:GetChecked()
+		SetShownSlots(true)
+		UpdateActiveProfileSettings()
+	end)
+	yOffset = yOffset - 30
 	--local hideSlotsUntilLearnedCheckbox = CreateCheckbox("hideSlotsUntilLearned", "left", yOffset, L["Hide Slots Until Learned"], L["Hide each slot in the Runes Widget until at least 1 rune is known for that slot."])
 	--yOffset = yOffset - 30
-	
-	--local hideHeadSlotCheckbox = CreateCheckbox("hideHeadSlot", "left", yOffset, L["Hide Head Slot"], L["Hide the Head Slot on the Runes Widget."])
-	--yOffset = yOffset - 30
-	
-	--local hideWaistSlotCheckbox = CreateCheckbox("hideWaistSlot", "left-2", yOffset, L["Hide Waist Slot"], L["Hide the Waist Slot on the Runes Widget."])
-	--yOffset = yOffset - 30
-	
-	--local hideFeetSlotCheckbox = CreateCheckbox("hideFeetSlot", "left-3", yOffset, L["Hide Feet Slot"], L["Hide the Feet Slot on the Runes Widget."])
-	--yOffset = yOffset - 30
-	
-	--local hideWristsSlotCheckbox = CreateCheckbox("hideWristsSlot", "left-4", yOffset, L["Hide Wrists Slot"], L["Hide the Wrists Slot on the Runes Widget."])
-	--yOffset = yOffset - 30
-	
-	--local hideNeckSlotCheckbox = CreateCheckbox("hideNeckSlot", "left", yOffset, L["Hide Neck Slot"], L["Hide the Neck Slot on the Runes Widget."])
-	--yOffset = yOffset - 30
-	--local hideShoulderSlotCheckbox = CreateCheckbox("hideShoulderSlot", "left", yOffset, L["Hide Shoulder Slot"], L["Hide the Shoulder Slot on the Runes Widget."])
-	--yOffset = yOffset - 30
 
-	--yOffset = yOffset - 30
-	
-
-	--yOffset = yOffset - 30
 	yOffset = yOffset - 50
 
 	
@@ -2701,17 +2747,8 @@ local function CreateOptionsPanel()
 	end
 
 	local function UpdateNotificationCheckboxStates()
-		if RuneReminder_CurrentSettings.enabled then			
-			setEnabledState(handsCheckbox, false)
-			setEnabledState(legsCheckbox, false)
-			setEnabledState(chestCheckbox, false)
-		else
-			setEnabledState(handsCheckbox, true)
-			setEnabledState(legsCheckbox, true)
-			setEnabledState(chestCheckbox, true)
-		end
-		
-		if RuneReminder_CurrentSettings.enabled or RuneReminder_CurrentSettings.handsNotification or RuneReminder_CurrentSettings.legsNotification or RuneReminder_CurrentSettings.chestNotification then
+
+		if RuneReminder_CurrentSettings.enabled then
 			setEnabledState(hideViewRunesButtonCheckbox, true)
 			setEnabledState(hideReapplyButtonCheckbox, true)
 			setEnabledState(disableSwapCheckbox, true)
@@ -2872,21 +2909,6 @@ local function CreateOptionsPanel()
 	-- On Click/changes 
 	enabledCheckbox:SetScript("OnClick", function(self)
 		RuneReminder_CurrentSettings.enabled = self:GetChecked()
-		UpdateNotificationCheckboxStates()
-		UpdateActiveProfileSettings()
-	end)
-	legsCheckbox:SetScript("OnClick", function(self)
-		RuneReminder_CurrentSettings.legsNotification = self:GetChecked()
-		UpdateNotificationCheckboxStates()
-		UpdateActiveProfileSettings()
-	end)
-	handsCheckbox:SetScript("OnClick", function(self)
-		RuneReminder_CurrentSettings.handsNotification = self:GetChecked()
-		UpdateNotificationCheckboxStates()
-		UpdateActiveProfileSettings()
-	end)
-	chestCheckbox:SetScript("OnClick", function(self)
-		RuneReminder_CurrentSettings.chestNotification = self:GetChecked()
 		UpdateNotificationCheckboxStates()
 		UpdateActiveProfileSettings()
 	end)
@@ -3124,9 +3146,9 @@ local function CreateOptionsPanel()
         --yOffsetSlider:SetValue(RuneReminder_CurrentSettings.yOffset or -40)
         enabledCheckbox:SetChecked(RuneReminder_CurrentSettings.enabled)
         soundCheckbox:SetChecked(RuneReminder_CurrentSettings.soundNotification)
-        handsCheckbox:SetChecked(RuneReminder_CurrentSettings.handsNotification)
-        chestCheckbox:SetChecked(RuneReminder_CurrentSettings.chestNotification)
-        legsCheckbox:SetChecked(RuneReminder_CurrentSettings.legsNotification)
+        --handsCheckbox:SetChecked(RuneReminder_CurrentSettings.handsNotification)
+        --chestCheckbox:SetChecked(RuneReminder_CurrentSettings.chestNotification)
+        --legsCheckbox:SetChecked(RuneReminder_CurrentSettings.legsNotification)
         hideReapplyButtonCheckbox:SetChecked(RuneReminder_CurrentSettings.hideReapplyButton)
         hideViewRunesButtonCheckbox:SetChecked(RuneReminder_CurrentSettings.hideViewRunesButton)
         displayRunesCheckbox:SetChecked(RuneReminder_CurrentSettings.displayRunes)
@@ -3153,6 +3175,17 @@ local function CreateOptionsPanel()
 		displayCooldownCheckbox:SetChecked(RuneReminder_CurrentSettings.displayCooldown)
 		displayCooldownTextCheckbox:SetChecked(RuneReminder_CurrentSettings.displayCooldownText)
 		
+		hideUnknownSlotsCheckbox:SetChecked(RuneReminder_CurrentSettings.hideUnknownSlots)
+		hideChestSlotCheckbox:SetChecked(RuneReminder_CurrentSettings.hideChestSlot)
+		hideLegsSlotCheckbox:SetChecked(RuneReminder_CurrentSettings.hideLegsSlot)
+		hideHandsSlotCheckbox:SetChecked(RuneReminder_CurrentSettings.hideHandsSlot)
+		hideWaistSlotCheckbox:SetChecked(RuneReminder_CurrentSettings.hideWaistSlot)
+		hideFeetSlotCheckbox:SetChecked(RuneReminder_CurrentSettings.hideFeetSlot)
+		hideWristsSlotCheckbox:SetChecked(RuneReminder_CurrentSettings.hideWristsSlot)
+		hideHeadSlotCheckbox:SetChecked(RuneReminder_CurrentSettings.hideHeadSlot)
+		hideNeckSlotCheckbox:SetChecked(RuneReminder_CurrentSettings.hideNeckSlot)
+		hideShoulderSlotCheckbox:SetChecked(RuneReminder_CurrentSettings.hideShoulderSlot)
+		
 		glowTextureDropdown:initialize()
 		runeTextureDropdown:initialize()
 		tooltipAnchorDropdown:initialize()
@@ -3169,6 +3202,7 @@ local function CreateOptionsPanel()
 		UpdateButtonBehaviors()
 		
 		UpdateActiveProfileSettings()
+		SetShownSlots(true)
     end
 
     panel:SetScript("OnShow", function()
@@ -3411,13 +3445,25 @@ function ApplyRuneSet(setToLoad, setName)
 						settingRuneID = runeID
 						isEngravingRune = true
 						
-							if slot == "Hands" then
-								CharacterHandsSlot:Click()
-							elseif slot == "Chest" then
-								CharacterChestSlot:Click()
-							elseif slot == "Legs" then
-								CharacterLegsSlot:Click()
-							end
+						if slot == "Hands" then
+							CharacterHandsSlot:Click()
+						elseif slot == "Chest" then
+							CharacterChestSlot:Click()
+						elseif slot == "Legs" then
+							CharacterLegsSlot:Click()
+						elseif slot == "Head" then
+							CharacterHeadSlot:Click()
+						elseif slot == "Neck" then
+							CharacterNeckSlot:Click()
+						elseif slot == "Feet" then
+							CharacterFeetSlot:Click()
+						elseif slot == "Shoulder" or slot == "Shoulders" then
+							CharacterShoulderSlot:Click()
+						elseif slot == "Wrists" or slot == "Wrist" then
+							CharacterWristSlot:Click()
+						elseif slot == "Waist" or slot == "Belt" then
+							CharacterWaistSlot:Click()
+						end
 							
 							ReplaceEnchant()
 							StaticPopup_Hide("REPLACE_ENCHANT")
@@ -3796,12 +3842,6 @@ local function HandleSlashCommand(msg)
 
     if command == "sound" then 
         toggleSetting("soundNotification", rest)
-    elseif command == "hands" then
-        toggleSetting("handsNotification", rest)
-    elseif command == "chest" then
-        toggleSetting("chestNotification", rest)
-    elseif command == "legs" then
-        toggleSetting("legsNotification", rest)
     elseif command == "enable" or command == "on" then
         toggleSetting("enabled", "on")
     elseif command == "disable" or command == "off" then
@@ -3864,6 +3904,8 @@ local function HandleSlashCommand(msg)
     elseif command == "update" then
         -- Force update of currentRunes
         UpdateRunes(true, true)
+		InitializeRuneDetails()
+		SetShownSlots(true)
 		ResetAllButtons()
         print(string.format("|cff2da3cf[%s]|r %s", L["Rune Reminder"], L["Runes updated:"]))
 		PrintCurrentRunes()
@@ -3906,7 +3948,6 @@ local function HandleSlashCommand(msg)
 		print("|cff2da3cf[" .. L["Rune Reminder"] .. "]|r /rr |cffabdaeb[enable/on]|r - " .. L["Enable popup notifications"])
 		print("|cff2da3cf[" .. L["Rune Reminder"] .. "]|r /rr |cffabdaeb[disable/off]|r - " .. L["Disable popup notifications"])
 		print("|cff2da3cf[" .. L["Rune Reminder"] .. "]|r /rr |cffabdaebsound [on/off]|r - " .. L["Toggle sound notifications"])
-		print("|cff2da3cf[" .. L["Rune Reminder"] .. "]|r /rr |cffabdaeb[hands/legs/chest] [on/off]|r - " .. L["Toggle notifications for specific slot"])
 		print("|cff2da3cf[" .. L["Rune Reminder"] .. "]|r /rr |cffabdaebreapply [on/off]|r - " .. L["Toggle the Re-Apply Rune button in popups"])
 		print("|cff2da3cf[" .. L["Rune Reminder"] .. "]|r /rr |cffabdaebviewrunes [on/off]|r - " .. L["Toggle the View Runes button in popups"])
 		print("|cff2da3cf[" .. L["Rune Reminder"] .. "]|r /rr |cffabdaeboptions|r - " .. L["Loads the options window"])
@@ -3969,6 +4010,7 @@ local function OnEvent(self, event, ...)
 				LoadProfileSettings(currentProfile)
 				-- Load current rune information
 				UpdateRunes(false, true)
+				SetShownSlots(true)
 				UpdateButtonBehaviors()
 				
 			end)
@@ -4018,9 +4060,9 @@ local function OnEvent(self, event, ...)
         for _, rune in ipairs(runes) do
             if rune.skillLineAbilityID == recipeID then
                 local slotName = GetSlotName(category)
-                local shouldNotify = RuneReminder_CurrentSettings.enabled or RuneReminder_CurrentSettings[string.lower(slotName) .. "Notification"]
+                local shouldNotify = RuneReminder_CurrentSettings.enabled
                 
-				pprint("|cff2da3cf[" .. L["Rune Reminder"] .. "]|r " .. L["New "] .. slot .. " " .. L["rune Learned:"] .. " |cffabdaeb" .. rune.name .. "|r")
+				print("|cff2da3cf[" .. L["Rune Reminder"] .. "]|r " .. L["New "] .. slot .. " " .. L["rune Learned:"] .. " |cffabdaeb" .. rune.name .. "|r")
 				
                 if shouldNotify then
                     local currentRune = currentRunes[category]
@@ -4053,6 +4095,8 @@ local function OnEvent(self, event, ...)
         end
 		RefreshRuneSelectionButtons(category)
     end
+	InitializeRuneDetails()
+	SetShownSlots(true)
 	elseif event == "ENGRAVING_MODE_CHANGED" then
 		local emode = ...
 		if PaperDollFrame:IsVisible() and RuneReminder_CurrentSettings.engravingMode == "TOGGLE"  then

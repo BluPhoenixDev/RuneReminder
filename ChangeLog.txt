@@ -1,3 +1,11 @@
+0.7.7.5
+----------
+* Preparation for future phases (New slots/runes are now ready and will be working immediately for Phase 2 launch) 
+* (Runes Widget) Added options to Show/Hide each rune slot individually
+* (Runes Widget) Added option to Show/Hide Rune Slots that haven't been discovered yet (defaults to hide, and they will show when you find a rune in that category)
+* Removed option to toggle notifications per slot - with the other settings the individual slot notification options are redundant/unnecessary
+
+
 0.7.7.4
 ----------
 * Added option to hide individual slots from the Runes Widget

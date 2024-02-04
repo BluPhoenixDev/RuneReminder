@@ -272,3 +272,5 @@ L["Hide the Legs Slot on the Runes Widget."] = true
 L["Hide the Feet Slot on the Runes Widget."] = true
 L["Hide the Wrists Slot on the Runes Widget."] = true
 L["Hide the Hands Slot on the Runes Widget."] = true
+L["Hide Slots until Runes are found/available"] = true
+L["Hide each slot in the Runes Widget until at least 1 rune is known for that slot."] = true
