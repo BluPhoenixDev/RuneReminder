@@ -222,9 +222,6 @@ local function initFrame(reset)
 		RuneReminder_CurrentSettings.charLocation["yOfs"]= 0
 		RuneReminder_CurrentSettings.charLocation["relativePoint"] = "CENTER"
 	else
-		--if frame:IsUserPlaced() then
-			-- user blizzard location caching... should we not and just rely on RR's now that it's more consistent?
-			-- Probably should for profiles and to simplify logic and debugging of position/reset issues...
 			frame:ClearAllPoints()
 		if RuneReminder_CurrentSettings.charLocation and RuneReminder_CurrentSettings.charLocation ~= {} and RuneReminder_CurrentSettings.charLocation["relativePoint"] then
 			frame:SetPoint(RuneReminder_CurrentSettings.charLocation["relativePoint"], UIParent, RuneReminder_CurrentSettings.charLocation["relativePoint"], RuneReminder_CurrentSettings.charLocation["xOfs"], RuneReminder_CurrentSettings.charLocation["yOfs"])
@@ -1205,7 +1202,6 @@ function UpdateRuneSetsButtonState(set, beginImmediately)
 					 GameTooltip:SetOwner(RuneSetsButton, RuneReminder_CurrentSettings.tooltipAnchor)
 							GameTooltip:ClearLines() -- Clear existing lines
 							GameTooltip:AddLine(string.format("|cff2da3cf%s|r\n%s: %s\n%s |cffabdaeb%s|r %s %s", L["Rune Reminder"], L["Rune Set"], setToApply, L["Apply"], runeDetails.name, L["to"], slotName), 1, 1, 1)
- -- Rune name in custom color
 						GameTooltip:Show()
 					end)
 					RuneSetsButton:SetScript("OnLeave", function()
@@ -2058,14 +2054,6 @@ function InitializeRRSettings()
 	RR_Profiles = RR_Profiles or {}
 	RR_RuneSets = RR_RuneSets or {}
 	
-	--validSlots = {}
-	--for k in pairs(unorderedValidSlots) do
-	--	tinsert(validSlots, k)
-	--end
-	--table.sort(validSlots)
-	
-	
-
 	characterID = GetCharacterUniqueID()
 	local profile = RR_CharacterProfiles[characterID]
 	
@@ -2638,13 +2626,8 @@ local function CreateOptionsPanel()
 		SetShownSlots(true)
 		UpdateActiveProfileSettings()
 	end)
-	yOffset = yOffset - 30
-	--local hideSlotsUntilLearnedCheckbox = CreateCheckbox("hideSlotsUntilLearned", "left", yOffset, L["Hide Slots Until Learned"], L["Hide each slot in the Runes Widget until at least 1 rune is known for that slot."])
-	--yOffset = yOffset - 30
+	yOffset = yOffset - 80
 
-	yOffset = yOffset - 50
-
-	
 	glowTextureDropdown.initialize = function(self, level)
 			local info = UIDropDownMenu_CreateInfo()
 			for userVisible, path in pairs(glowTextures) do
@@ -2872,14 +2855,6 @@ local function CreateOptionsPanel()
 	local widgetPosLabel = scrollChild:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
 	widgetPosLabel:SetPoint("TOPLEFT", 470, yOffset + 30)
 	widgetPosLabel:SetText(L["Adjust Positioning"])	
-	
-	-- Create xOffsetSlider with textbox
-	--local xOffsetSlider, xOffsetTextbox = CreateSliderWithTextbox("xOffset", "X Offset", -2000, 2000, 1, 16, yOffset, 400)
-	--yOffset = yOffset - 60 -- Adjust y offset for next component
-
-	-- Create yOffsetSlider with textbox
-	--local yOffsetSlider, yOffsetTextbox = CreateSliderWithTextbox("yOffset", "Y Offset", -2000, 2000, 1, 16, yOffset, 400)
-	--yOffset = yOffset - 60 
 
 	-- Create buttonSizeSlider with textbox
 	local buttonSizeSlider, buttonSizeTextbox = CreateSliderWithTextbox("buttonSize", L["Button Size"], 5, 100, 1, 26, yOffset, 350)
@@ -3064,7 +3039,6 @@ local function CreateOptionsPanel()
 		RuneReminder_CurrentSettings.charLocation.yOfs = yOfs
 		RuneReminder_CurrentSettings.charLocation.relativePoint = relativePoint
 		UpdateActiveProfileSettings()
-		--frame:SetUserPlaced(true)
 	end
 
 	-- Reset Button
@@ -3146,8 +3120,6 @@ local function CreateOptionsPanel()
 
     -- Function to update controls based on current settings
     function panel:UpdateControls()
-        --xOffsetSlider:SetValue(RuneReminder_CurrentSettings.xOffset or 40)
-        --yOffsetSlider:SetValue(RuneReminder_CurrentSettings.yOffset or -40)
         enabledCheckbox:SetChecked(RuneReminder_CurrentSettings.enabled)
         soundCheckbox:SetChecked(RuneReminder_CurrentSettings.soundNotification)
         --handsCheckbox:SetChecked(RuneReminder_CurrentSettings.handsNotification)
@@ -3349,7 +3321,7 @@ function UpdateRunes(includePopups, includeChat)
 
     end
 	
-	        -- Update all slot buttons cooldowns when equipment changes
+	-- Update all slot buttons cooldowns when equipment changes
 	if RuneReminder_CurrentSettings.displayCooldown then
 		for slotID, runeInfo in pairs(currentRunes) do
             local button = slotButtons[slotID]
@@ -3400,7 +3372,6 @@ end
 
 -- Rune Sets
 local function ApplyRuneToSlot(slotID, runeID, setName)
-
 	UpdateRuneSetsButtonState()
 end
 
@@ -3705,21 +3676,6 @@ function LoadRuneSet(setName, manual)
         ApplyRuneSet(setToLoad, setName)
     end
 	
-    -- Define the confirmation popup dialog
-    --StaticPopupDialogs["CONFIRM_LOAD_RUNE_SET"] = {
-    --    text = "|cff2da3cf[Rune Reminder]|r \nLoading the rune set '" .. setName .. "' will make the following changes:\n" .. changesText ..
-    --           "\n\nDo you wish to proceed? You must stand still while the runes are applied.",
-    --    button1 = L["Yes"],
-    --    button2 = L["No"],
-    --    OnAccept = function()
-    --        ApplyRuneSet(setToLoad, setName)  -- handle actual application logic here
-    --    end,
-    --    timeout = 0,
-    --    whileDead = true,
-    --    hideOnEscape = true,
-    --    preferredIndex = 3, -- Avoid taint issues
-    --}
-    --StaticPopup_Show("CONFIRM_LOAD_RUNE_SET")
 end
 
 local function ListRuneSets()
@@ -3923,22 +3879,6 @@ local function HandleSlashCommand(msg)
     elseif command == "swapdir" then
 		swapDir()
         print(string.format("|cff2da3cf[%s]|r %s %s %s", L["Rune Reminder"], L["Rune Direction set to"], RuneReminder_CurrentSettings.runeDirection))
-	--elseif command == "pos" then
-		--print("|cff2da3cf[Rune Reminder]|r Rune Widget Position X: " .. RuneReminder_CurrentSettings.xOffset .. " Y: ".. RuneReminder_CurrentSettings.yOffset)
-		--print("|cff2da3cf[Rune Reminder]|r To reposition, use /rr setpos <x> <y>")
-		
-	--elseif command == "setpos" then
-	--    local x, y = strsplit(" ", rest)
-    --    x, y = tonumber(x), tonumber(y)
-    --    if x and y then
-    --        RuneReminder_CurrentSettings.xOffset = x
-    --        RuneReminder_CurrentSettings.yOffset = y
-    --       print("|cff2da3cf[Rune Reminder]|r Position set to X:" .. x .. " Y:" .. y)
-    --        CreateSlotButtons(true)  -- Apply new position settings
-	--		RuneReminderOptionsPanel:UpdateControls()
-    --    else
-    --        print("|cff2da3cf[Rune Reminder]|r Invalid position values. Usage: /rr setpos <x> <y>")
-    --    end
 	elseif command == "howto" or command == "instructions" then
         print(string.format("|cff2da3cf[%s]|r %s", L["Rune Reminder"], L["Shift Click the widget (or type /rr options) to open the Options Panel. Here you can configure the notifications and runes widget to your preferences."]))
 		print(string.format("|cff2da3cf[%s]|r %s", L["Rune Reminder"], L["Left Click + Drag the anchor to position the Runes Widget. Ctrl+Click will lock/unlock it, and Right Click will hide the anchor."]))
@@ -4162,7 +4102,6 @@ frame:SetScript("OnEvent", OnEvent)
 frame:SetMovable(true)
 frame:EnableMouse(true)
 frame:RegisterForDrag("LeftButton")
---frame:SetUserPlaced(true)
 
 function ShowHideAnchor()
 
@@ -4256,7 +4195,6 @@ frame:SetScript("OnMouseUp", function(self)
 	RuneReminder_CurrentSettings.charLocation.relativePoint = relativePoint
 	
 	UpdateActiveProfileSettings()
-	--frame:SetUserPlaced(true)
 end)
 
 

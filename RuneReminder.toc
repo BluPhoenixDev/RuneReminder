@@ -1,8 +1,8 @@
-## Interface: 11500
+## Interface: 11501
 ## Title: Rune Reminder 
 ## Notes: Rune Sets, Notifications, & Quick Swap Widget for SoD (Season of Discovery)
 ## Author: Blu
-## Version: 0.7.7.6
+## Version: 1.0.0
 ## SavedVariables: RuneReminderSettings, RR_RuneSets, RR_Profiles, RR_CharacterProfiles, RuneReminderSharedSettings
 ## SavedVariablesPerCharacter: RuneReminderCharacterSettings
 
