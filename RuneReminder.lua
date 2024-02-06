@@ -349,10 +349,10 @@ local function InitializeRuneDetails()
 end
 
 local function GetSlotName(Identifier)
-	return validSlots[Identifier]
+	return allSlots[Identifier]
 end
 local function GetSlotID(Name)
-	return validSlots[Identifier]
+	return allSlots[Name]
 end
 local debugging = false;
 
@@ -753,8 +753,8 @@ local function CreateOrUpdateRuneSelectionButtons(slotID, showRunes)
                 button = CreateRuneButton(slotID, rune, i)
                 runeSelectionButtons[slotID][i] = button
 					if debugging then
-						print ("In create or update"..button.iconTexture)
-						print("pt2"..rune.iconTexture)
+						--print ("In create or update"..button.iconTexture)
+						--print("pt2"..rune.iconTexture)
 					end
 				if Masque then
 					button:SetFrameLevel(0)
@@ -1080,7 +1080,7 @@ local function CreateRuneSetsButton()
 		button:SetScript("OnLeave", function()
 			GameTooltip:Hide()
 			if debugging then
-				print("|cff2da3cf[Rune Reminder]|r Run OnLeave - " .. slotName)
+				print("|cff2da3cf[Rune Reminder]|r Run OnLeave - RuneSets")
 			end
 		end)
 		
@@ -3927,6 +3927,10 @@ end
 
 -- Event Handler Function
 local function OnEvent(self, event, ...)
+	if debugging then
+	print("-----EVENT:"..event)
+	end
+	
     if event == "ADDON_LOADED" and ... == addonName then
 		C_Timer.After(2,function()
 
@@ -3985,24 +3989,31 @@ local function OnEvent(self, event, ...)
 	local recipeID = ...
 		
     if debugging then
+		print("here")
         print("New Recipe Learned: " .. recipeID)
     end
 	
 	C_Engraving.ClearExclusiveCategoryFilter()
 	C_Engraving.SetSearchFilter("")
 	
-    local categories = C_Engraving.GetRuneCategories(true, true)
+	--local recipeInfo = C_TradeSkillUI.GetRecipeInfo(recipeID)
+
+    local categories = C_Engraving.GetRuneCategories(false, false)
 
     for _, category in ipairs(categories) do
 		C_Engraving.ClearCategoryFilter(category)
-        local runes = C_Engraving.GetRunesForCategory(category, RuneReminder_CurrentSettings.hideUnknownRunes)
+        local runes = C_Engraving.GetRunesForCategory(category, false)
         
 	    if debugging then
 			print("New Recipe Learned: " .. recipeID)
 		end	
 		
         for _, rune in ipairs(runes) do
-            if rune.skillLineAbilityID == recipeID then
+			if debugging then
+				print(rune.skillLineAbilityID)
+			end
+			
+            if rune.skillLineAbilityID == recipeID then --recipeInfo.skillLineAbilityID then
                 local slotName = GetSlotName(category)
                 local shouldNotify = RuneReminder_CurrentSettings.enabled
                 
@@ -4031,7 +4042,7 @@ local function OnEvent(self, event, ...)
                         preferredIndex = 3, -- Reduce taint issues
                     }
                     
-                    --StaticPopup_Show("ENGRAVE_NEW_RUNE")
+                    StaticPopup_Show("ENGRAVE_NEW_RUNE")
                 end
                 break -- Only handle one rune at a time
             end
@@ -4061,6 +4072,14 @@ local function OnEvent(self, event, ...)
 	elseif event == "SETTINGS_CHANGED" then
         CreateSlotButtons(true)  -- Recreate buttons to apply new positions
 		RuneReminderOptionsPanel:UpdateControls()
+	elseif event == "UNIT_SPELLCAST_SENT" then
+	local _, target, cast, spellID = ...
+       if debugging then
+		local info = GetSpellInfo(spellID)
+		print(spellID)
+		print("yo")
+		print(info)
+	   end
 	elseif event == "SPELL_UPDATE_COOLDOWN" or event == "SPELL_UPDATE_USABLE" then
 	  -- Loop through all known runes and update cooldowns
 	  
@@ -4097,6 +4116,7 @@ frame:RegisterEvent("RUNE_UPDATED")
 frame:RegisterEvent("NEW_RECIPE_LEARNED")
 frame:RegisterEvent("SPELL_UPDATE_COOLDOWN")
 frame:RegisterEvent("SPELL_UPDATE_USABLE")
+--frame:RegisterEvent("UNIT_SPELLCAST_SENT")
 frame:SetScript("OnEvent", OnEvent)
 
 frame:SetMovable(true)

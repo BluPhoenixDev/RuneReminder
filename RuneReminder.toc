@@ -2,14 +2,11 @@
 ## Title: Rune Reminder 
 ## Notes: Rune Sets, Notifications, & Quick Swap Widget for SoD (Season of Discovery)
 ## Author: Blu
-## Version: 1.0.0
+## Version: 1.0.1
 ## SavedVariables: RuneReminderSettings, RR_RuneSets, RR_Profiles, RR_CharacterProfiles, RuneReminderSharedSettings
 ## SavedVariablesPerCharacter: RuneReminderCharacterSettings
 
-# Library files
-#@no-lib-strip@
-Libs\AceLocale-3.0\AceLocale-3.0.xml
-#@end-no-lib-strip@
+embeds.xml
 
 # Locale files
 Locales\Locale-enUS.lua
@@ -23,5 +20,4 @@ Locales\Locale-zhTW.lua
 Locales\Locale-ptBR.lua
 
 # Core files
-LibStub.lua
 RuneReminder.lua
