@@ -156,6 +156,11 @@ local allSlots = {
 	[10] = "Hands"
 }
 
+local invalidRunes = {
+ [48274] = "Shadowfiend",
+ [48859] = "Aspect of the Viper"
+}
+
 local shownSlots = {
 }
 
@@ -333,17 +338,21 @@ local function InitializeRuneDetails()
         -- Fetch all runes for this category and populate runeDetailsMap
         local allRunes = C_Engraving.GetRunesForCategory(category, false)
         for _, rune in ipairs(allRunes) do
-            runeDetailsMap[rune.skillLineAbilityID] = {
-                name = rune.name,
-                category = category,
-                iconTexture = rune.iconTexture 
-            }
+			if not invalidRunes[rune.skillLineAbilityID] then
+				runeDetailsMap[rune.skillLineAbilityID] = {
+					name = rune.name,
+					category = category,
+					iconTexture = rune.iconTexture 
+				}
+			end
         end
         -- Fetch only learned runes for this category and populate learnedRunes
         local learnedRunesInCategory = C_Engraving.GetRunesForCategory(category, true)
         for _, rune in ipairs(learnedRunesInCategory) do
-            learnedRunes[rune.skillLineAbilityID] = true
-			knownSlots[category] = true
+			if not invalidRunes[rune.skillLineAbilityID] then
+				learnedRunes[rune.skillLineAbilityID] = true
+				knownSlots[category] = true
+			end
         end
     end
 end
@@ -740,9 +749,17 @@ local function CreateOrUpdateRuneSelectionButtons(slotID, showRunes)
         local allRunes = C_Engraving.GetRunesForCategory(slotID, RuneReminder_CurrentSettings.hideUnknownRunes)
         local filteredRunes = {}
         for _, rune in ipairs(allRunes) do
-            if not (currentRunes[slotID] and rune.skillLineAbilityID == currentRunes[slotID].skillLineAbilityID) then
-                table.insert(filteredRunes, rune)
-            end
+			if debugging then
+				print("rune: ".. rune.name)
+				print(rune.skillLineAbilityID)
+			end
+
+			if not invalidRunes[rune.skillLineAbilityID] then
+						if not (currentRunes[slotID] and rune.skillLineAbilityID == currentRunes[slotID].skillLineAbilityID) then
+							table.insert(filteredRunes, rune)
+						end
+			end
+
         end
 
         runeSelectionButtons[slotID] = runeSelectionButtons[slotID] or {}

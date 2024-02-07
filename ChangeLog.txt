@@ -1,3 +1,9 @@
+v 1.0.2
+----------
+* Fix to hide/remove some QoL Books/Scrolls that are in the data files/API as Runes (Shadowfiend and Aspect of the Viper)
+NOTE: If you notice any others like this that are displaying as runes that should not be, please let me know.
+
+
 v 1.0.1
 ----------
 * Fix for error on load with Ace-3/Localization if not using any other addons with Ace-3

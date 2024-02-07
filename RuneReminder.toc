@@ -2,7 +2,7 @@
 ## Title: Rune Reminder 
 ## Notes: Rune Sets, Notifications, & Quick Swap Widget for SoD (Season of Discovery)
 ## Author: Blu
-## Version: 1.0.1
+## Version: 1.0.2
 ## SavedVariables: RuneReminderSettings, RR_RuneSets, RR_Profiles, RR_CharacterProfiles, RuneReminderSharedSettings
 ## SavedVariablesPerCharacter: RuneReminderCharacterSettings
 
