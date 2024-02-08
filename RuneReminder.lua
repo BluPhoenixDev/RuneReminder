@@ -3331,12 +3331,12 @@ function UpdateRunes(includePopups, includeChat)
 
         -- Update the stored rune information
 		currentRunes[slotID] = newRune
-		
-		if not InCombatLockdown() then
-			ResetAllButtons()
-		end
 
     end
+	
+	if not InCombatLockdown() then
+		ResetAllButtons()
+	end
 	
 	-- Update all slot buttons cooldowns when equipment changes
 	if RuneReminder_CurrentSettings.displayCooldown then
@@ -4014,7 +4014,6 @@ local function OnEvent(self, event, ...)
 	C_Engraving.SetSearchFilter("")
 	
 	--local recipeInfo = C_TradeSkillUI.GetRecipeInfo(recipeID)
-
     local categories = C_Engraving.GetRuneCategories(false, false)
 
     for _, category in ipairs(categories) do
@@ -4078,14 +4077,18 @@ local function OnEvent(self, event, ...)
     elseif event == "RUNE_UPDATED" then
         -- Actions when a rune is updated
 		local rune = ...
-		if settingRuneID == 0 then
-			UpdateRunes(false, true)
-		else
-			settingRuneID = 0
-			UpdateRunes(false, false)
-		end
 		
-		UpdateRuneSetsButtonState()
+		if rune then
+			if settingRuneID == 0 then
+				UpdateRunes(false, true)
+			else
+				settingRuneID = 0
+				UpdateRunes(false, false)
+			end
+			
+			UpdateRuneSetsButtonState()
+		end
+
 	elseif event == "SETTINGS_CHANGED" then
         CreateSlotButtons(true)  -- Recreate buttons to apply new positions
 		RuneReminderOptionsPanel:UpdateControls()

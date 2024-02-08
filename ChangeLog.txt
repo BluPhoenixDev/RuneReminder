@@ -1,3 +1,8 @@
+v 1.0.3
+----------
+* Fix for performance issue caused by extra calls and amplified by API changes in 1.15.1 
+
+
 v 1.0.2
 ----------
 * Fix to hide/remove some QoL Books/Scrolls that are in the data files/API as Runes (Shadowfiend and Aspect of the Viper)
