@@ -906,8 +906,6 @@ function RefreshRuneSelectionButtons(slotID, forceshow)
 end
 
 
-
-
 -- Function to get detailed rune information by its ID
 local function GetRuneDetailsFromID(runeID)
 
@@ -940,13 +938,13 @@ local function SaveCurrentRuneSet()
     StaticPopup_Show("SAVE_RUNE_SET")
 end
 
-	RuneSetsDropdownMenu = CreateFrame("Frame", "RR_RuneSetsDropdownMenu", Frame, "UIDropDownMenuTemplate")
-	RuneSetsDropdownMenu.displayMode = "MENU"
-	RuneSetsDropdownMenu:SetParent(UIParent)
-	
-	RuneSetsDropdownMenu = CreateFrame("Frame", "RR_RuneSetsDropdownDelMenu", Frame, "UIDropDownMenuTemplate")
-	RuneSetsDropdownMenu.displayMode = "MENU"
-	RuneSetsDropdownMenu:SetParent(UIParent)
+RuneSetsDropdownMenu = CreateFrame("Frame", "RR_RuneSetsDropdownMenu", Frame, "UIDropDownMenuTemplate")
+RuneSetsDropdownMenu.displayMode = "MENU"
+RuneSetsDropdownMenu:SetParent(UIParent)
+
+RuneSetsDropdownMenu = CreateFrame("Frame", "RR_RuneSetsDropdownDelMenu", Frame, "UIDropDownMenuTemplate")
+RuneSetsDropdownMenu.displayMode = "MENU"
+RuneSetsDropdownMenu:SetParent(UIParent)
 		
 local function HideDropdownMenu()
     if UIDropDownMenu_GetCurrentDropDown() == RuneSetsDropdownMenu or UIDropDownMenu_GetCurrentDropDown() == RuneSetsDropdownMenu   then
@@ -1230,8 +1228,7 @@ function UpdateRuneSetsButtonState(set, beginImmediately)
 
 
 			elseif not set then
-				-- Revert to default icon when no runes are left to apply
-				--RuneSetsButton.texture:SetTexture(RuneReminder_CurrentSettings.runeSetsIcon)
+				-- Revert to default 
 				print(string.format("|cff2da3cf[%s]|r %s |cffabdaeb%s|r %s.", L["Rune Reminder"], L["Rune Set"], setToApply, L["is now active"]))
 
 				setToApply = nil -- Clear the currently applying set
@@ -1278,7 +1275,6 @@ function UpdateRuneSetsButtonState(set, beginImmediately)
 			end
 		else
 			-- Default state
-			--RuneSetsButton.texture:SetTexture("Interface/Icons/INV_MISC_RUNE_05")
 			RuneSetsButton:SetScript("OnMouseUp", DisplayRuneSetsMenu)
 			print(string.format("|cff2da3cf[%s]|r %s |cffabdaeb%s|r %s", L["Rune Reminder"], L["Rune Set"], setToApply, L["is already active"]))
 		end
@@ -2423,10 +2419,6 @@ local function CreateOptionsPanel()
 			-- Update the setting based on the slider's name
 			if name == "buttonSize" then
 				updateButtonSize(self, value)
-			--elseif name == "xOffset" then
-			--	updateXOffset(self, value)
-			--elseif name == "yOffset" then
-			--	updateYOffset(self, value)
 			elseif name == "buttonPadding" then
 				updateButtonPadding(self, value)
 			elseif name == "glowOpacity" then
@@ -2506,9 +2498,6 @@ local function CreateOptionsPanel()
 	local hideViewRunesButtonCheckbox = CreateCheckbox("hideViewRunesButton", "left", yOffset - 60, L["Hide View Runes Button"], L["Toggle the visibility of the View Runes button in popups."])
 	local disableSwapCheckbox = CreateCheckbox("disableSwapNotify", "left", yOffset - 90, L["Disable when swapping to engraved gear"], L["Disable popup notification when equipping engraved gear."])
 	local disableRemoveCheckbox = CreateCheckbox("disableRemoveNotify", "left", yOffset - 120, L["Disable when removing gear"], L["Disable popup notification when removing gear (without a new piece replacing it)"])
-	--local handsCheckbox = CreateCheckbox("handsNotification", "left", yOffset - 60, L["Enable Hands Notifications"], L["Toggle notifications for changes in Hands slot."])
-	--local chestCheckbox = CreateCheckbox("chestNotification", "left", yOffset - 90, L["Enable Chest Notifications"], L["Toggle notifications for changes in Chest slot."])
-	--local legsCheckbox = CreateCheckbox("legsNotification", "left", yOffset - 120, L["Enable Legs Notifications"], L["Toggle notifications for changes in Legs slot."])
 
 	-- Right Column
 	local soundCheckbox = CreateCheckbox("soundNotification", "right", yOffset - 30, L["Enable Sound Notifications"], L["Toggle sound notifications for rune changes."])
@@ -2996,9 +2985,10 @@ local function CreateOptionsPanel()
 				HideRuneSelectionButtons()
 			end	
 			ShowHideAnchor()
+			UpdateActiveProfileSettings()
 		end)
 		
-		keepOpenCheckbox:SetScript("OnClick", function(self)
+	keepOpenCheckbox:SetScript("OnClick", function(self)
 		RuneReminder_CurrentSettings.keepOpen = self:GetChecked()
 		if RuneReminder_CurrentSettings.keepOpen then
 			RefreshRuneSelectionButtons()
@@ -3375,14 +3365,18 @@ local function swapDir()
     -- Toggle between standard and alternate direction
     RuneReminder_CurrentSettings.runeDirection = (RuneReminder_CurrentSettings.runeDirection == "Standard") and "Alternate" or "Standard"
     redrawWidget() 
-	RuneReminderOptionsPanel:UpdateControls()
+	if RuneReminderOptionsPanel:IsVisible() then
+		RuneReminderOptionsPanel:UpdateControls()
+	end
 	
 end
 local function rotate()
     -- Toggle between horizontal and vertical alignment
     RuneReminder_CurrentSettings.runeAlignment = (RuneReminder_CurrentSettings.runeAlignment == "Horizontal") and "Vertical" or "Horizontal"
     redrawWidget() 
-	RuneReminderOptionsPanel:UpdateControls()
+	if RuneReminderOptionsPanel:IsVisible() then
+		RuneReminderOptionsPanel:UpdateControls()
+	end
 end
 
 
@@ -3480,7 +3474,6 @@ end
 
 -- A helper function to compare two rune sets
 local function AreRuneSetsIdentical(runeSetA, runeSetB)
-    -- This function assumes runeSetA and runeSetB are tables structured with keys as slot IDs and values as skillLineAbilityIDs
     for slotID, skillLineAbilityID in pairs(runeSetA) do
         if runeSetB[slotID] ~= skillLineAbilityID then
             return false
@@ -3535,7 +3528,6 @@ function SaveRuneSet(setName)
     end
 
     if identicalSetExists and identicalSetName ~= setName then
-        -- Inform the user an identical set exists and provide options
         StaticPopupDialogs["CONFIRM_IDENTICAL_RUNE_SET"] = {
 			text = string.format("|cff2da3cf[%s]|r\n %s '%s' %s.",
 				L["Rune Reminder"],
@@ -3569,7 +3561,7 @@ function SaveRuneSet(setName)
 			timeout = 0,
 			whileDead = true,
 			hideOnEscape = true,
-			preferredIndex = 3, -- Avoid taint
+			preferredIndex = 3, 
 		}
 		
         StaticPopup_Show("CONFIRM_IDENTICAL_RUNE_SET")
@@ -3871,11 +3863,9 @@ local function HandleSlashCommand(msg)
         end
 	elseif command == "reset" then
         -- Reset currentRunes
-        --currentRunes = {}
         print(string.format("|cff2da3cf[%s]|r %s", L["Rune Reminder"], L["Runes Widget reset."]))
 		initFrame(true)
 		ResetAllButtons()
-		--PrintCurrentRunes()
 	elseif command == "refresh" then
 		RefreshMasqueGroup()
     elseif command == "update" then
@@ -4006,7 +3996,6 @@ local function OnEvent(self, event, ...)
 	local recipeID = ...
 		
     if debugging then
-		print("here")
         print("New Recipe Learned: " .. recipeID)
     end
 	
