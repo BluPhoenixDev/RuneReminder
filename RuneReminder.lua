@@ -1019,7 +1019,30 @@ local function DisplayRuneSetsMenu()
 end
 
 local function PrepDeleteRuneSet(setName)
- StaticPopup_Show("CONFIRM_DELETE_RUNE_SET", setName).data = setName
+
+ StaticPopupDialogs["CONFIRM_DELETE_RUNE_SET"] = {
+    text = string.format("|cff2da3cf[%s]|r\n%s '%s'?",
+            L["Rune Reminder"],
+            L["Are you sure you want to delete the Rune Set"],
+            setName or L["Invalid Set Name"]
+        )
+    ,
+    button1 = L["Yes"],
+    button2 = L["No"],
+    enterClicksFirstButton = true,
+    OnAccept = function(self)  
+        DeleteRuneSet(setName, true)  
+    end,
+    timeout = 0,
+    whileDead = true,
+    hideOnEscape = true,
+    hasEditBox = false,
+    preferredIndex = 3, -- avoid taint from UIParent dialogs
+}
+
+ StaticPopup_Show("CONFIRM_DELETE_RUNE_SET")
+ 
+
 end
 
 local function DisplayRuneSetsDelMenu()
@@ -3529,18 +3552,18 @@ function SaveRuneSet(setName)
 
     if identicalSetExists and identicalSetName ~= setName then
         StaticPopupDialogs["CONFIRM_IDENTICAL_RUNE_SET"] = {
-			text = string.format("|cff2da3cf[%s]|r\n %s '%s' %s.",
+			text = string.format("|cff2da3cf[%s]|r\n %s '%s' %s",
 				L["Rune Reminder"],
 				L["An identical Rune Set named"],
 				identicalSetName,
 				L["already exists."]
 			),
 			button1 = L["Create New"],
-			button3 = string.format(L["%s '%s' %s '%s'"], L["Rename"], identicalSetName, L["to"], setName),
+			button3 = string.format("%s '%s' %s '%s'", L["Rename"], identicalSetName, L["to"], setName),
 			button4 = L["Cancel"],
 			OnButton1 = function()
 				RR_RuneSets[characterID][setName] = currentSet
-				print(string.format("|cff2da3cf[%s]|r %s '%s' %s.",
+				print(string.format("|cff2da3cf[%s]|r %s '%s' %s",
 					L["Rune Reminder"],
 					L["New set"],
 					setName,
@@ -3567,7 +3590,7 @@ function SaveRuneSet(setName)
         StaticPopup_Show("CONFIRM_IDENTICAL_RUNE_SET")
     elseif existingSet then
         if AreRuneSetsIdentical(existingSet, currentSet) then
-            print(string.format("|cff2da3cf[%s]|r %s '%s' %s.",
+            print(string.format("|cff2da3cf[%s]|r %s '%s' %s",
 				L["Rune Reminder"],
 				L["Set"],
 				setName,
@@ -3577,12 +3600,12 @@ function SaveRuneSet(setName)
         else
             -- Prompt user for update
             StaticPopupDialogs["CONFIRM_UPDATE_RUNE_SET"] = {
-                text = string.format("|cff2da3cf[%s]|r\n%s '%s' %s. %s", L["Rune Reminder"], L["A set named"], setName, L["already exists. Update with new runes?"], L["Update"]),
+                text = string.format("|cff2da3cf[%s]|r\n%s '%s' %s", L["Rune Reminder"], L["A set named"], setName, L["already exists. Update with new runes?"]),
                 button1 = L["Yes"],
                 button2 = L["No"],
                 OnAccept = function()
                     RR_RuneSets[characterID][setName] = currentSet
-                    print(string.format("|cff2da3cf[%s]|r %s %s %s.", L["Rune Reminder"], setName, L["updated with new runes"], L["."]))
+                    print(string.format("|cff2da3cf[%s]|r %s %s %s.", L["Rune Reminder"], setName, L["updated with new runes"]))
                 end,
                 timeout = 0,
                 whileDead = true,
@@ -3614,11 +3637,10 @@ function LoadRuneSet(setName, manual)
     local setToLoad = RR_RuneSets[characterID] and RR_RuneSets[characterID][setName]
 
     if not setToLoad then
-        print(string.format("|cff2da3cf[%s]|r %s '%s' %s.",
+        print(string.format("|cff2da3cf[%s]|r %s '%s'.",
 			L["Rune Reminder"],
 			L["No saved set named"],
-			setName,
-			"."
+			setName
 		))
 
         return
@@ -3626,11 +3648,10 @@ function LoadRuneSet(setName, manual)
 	
     local differences = GetDifferencesBetweenSets(currentRunes, setToLoad)
     if next(differences) == nil then -- Check if differences table is empty
-        print(string.format("|cff2da3cf[%s]|r %s '%s' %s.",
+        print(string.format("|cff2da3cf[%s]|r %s '%s'.",
 			L["Rune Reminder"],
 			L["You are already using the Rune Set"],
-			setName,
-			"."
+			setName
 		))
 
         return
@@ -3655,7 +3676,7 @@ function LoadRuneSet(setName, manual)
     -- If in manual mode, display the rune selection buttons for the user to apply runes manually
     if manual then
 	
-        print(string.format("|cff2da3cf[%s]|r %s '%s' %s.",
+        print(string.format("|cff2da3cf[%s]|r %s '%s' %s",
 			L["Rune Reminder"],
 			L["To load the"],
 			setName,
@@ -3730,28 +3751,6 @@ local function ListRuneSets()
 end
 
 
-StaticPopupDialogs["CONFIRM_DELETE_RUNE_SET"] = {
-    text = function(self)
-        return string.format("|cff2da3cf[%s]|r\n%s '%s'?",
-            L["Rune Reminder"],
-            L["Are you sure you want to delete the Rune Set"],
-            self.data.setName or L["Invalid Set Name"]
-        )
-    end,
-
-    button1 = L["Yes"],
-    button2 = L["No"],
-    enterClicksFirstButton = true,
-    OnAccept = function(self)
-        local setName = self.data.setName  
-        DeleteRuneSet(setName, true)  
-    end,
-    timeout = 0,
-    whileDead = true,
-    hideOnEscape = true,
-    hasEditBox = false,
-    preferredIndex = 3, -- avoid taint from UIParent dialogs
-}
 
 
 -- Slash Command Handler
@@ -3920,7 +3919,8 @@ local function HandleSlashCommand(msg)
 			LoadRuneSet(rest, false)
 	elseif command == "delete" and rest ~= "" then
         -- Show the confirmation dialog before deleting
-        StaticPopup_Show("CONFIRM_DELETE_RUNE_SET", rest).data = rest
+        --StaticPopup_Show("CONFIRM_DELETE_RUNE_SET", rest).data = rest
+		PrepDeleteRuneSet(rest)
 	elseif command == "sets" then
 		ListRuneSets()
     else
