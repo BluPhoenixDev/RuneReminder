@@ -1,3 +1,8 @@
+v 1.0.6
+----------
+* Fix Lua error when Updating existing Rune Set
+
+
 v 1.0.5
 ----------
 * Fixes for Rune Sets giving errors when updating/deleting sets

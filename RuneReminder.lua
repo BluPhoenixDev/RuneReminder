@@ -3605,7 +3605,7 @@ function SaveRuneSet(setName)
                 button2 = L["No"],
                 OnAccept = function()
                     RR_RuneSets[characterID][setName] = currentSet
-                    print(string.format("|cff2da3cf[%s]|r %s %s %s.", L["Rune Reminder"], setName, L["updated with new runes"]))
+                    print(string.format("|cff2da3cf[%s]|r %s %s.", L["Rune Reminder"], setName, L["updated with new runes"]))
                 end,
                 timeout = 0,
                 whileDead = true,
