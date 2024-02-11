@@ -1,3 +1,7 @@
+v 1.0.7
+----------
+* Change default for notification when swapping to engraved gear
+
 v 1.0.6
 ----------
 * Fix Lua error when Updating existing Rune Set
