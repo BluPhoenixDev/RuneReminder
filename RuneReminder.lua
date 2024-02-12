@@ -656,13 +656,17 @@ function CreateRuneButton(slotID, rune, index)
 			ShowRuneWarning(L["Runes cannot be applied during combat"])
 		elseif IsPlayerMoving() or IsFlying() or IsFalling() then
 			ShowRuneWarning(L["Runes cannot be applied while moving"])
-		elseif IsMounted() then
-			ShowRuneWarning(L["Runes cannot be applied while mounted"])
+		--elseif IsMounted() then
+		--	Dismount();
+			--ShowRuneWarning(L["Runes cannot be applied while mounted"])
 		elseif spell then
 			ShowRuneWarning(L["Runes cannot be applied while casting"])
 		elseif not learnedRunes[rune.skillLineAbilityID] then
 			ShowRuneWarning(L["Rune must be collected first"])
 		else
+			if IsMounted() then
+				Dismount();
+			end
 			if not RuneReminder_CurrentSettings.keepOpen then
 				HideRuneSelectionButtons(slotID)
 			end
@@ -1223,11 +1227,14 @@ function UpdateRuneSetsButtonState(set, beginImmediately)
 							ShowRuneWarning(L["Runes cannot be applied during combat"])
 						elseif IsPlayerMoving() or IsFlying() or IsFalling() then
 							ShowRuneWarning(L["Runes cannot be applied while moving"])
-						elseif IsMounted() then
-							ShowRuneWarning(L["Runes cannot be applied while mounted"])
+						--elseif IsMounted() then
+							--ShowRuneWarning(L["Runes cannot be applied while mounted"])
 						elseif spell then
 							ShowRuneWarning(L["Runes cannot be applied while casting"])
 						else
+							if IsMounted() then
+								Dismount();
+							end
 							ApplyRuneSet(setToLoad, setToApply)
 						end
 					end

@@ -1,6 +1,12 @@
+v 1.0.8
+----------
+* Now automatically dismounts when trying to change runes while mounted, rather than giving an error (unless moving or in combat)
+
+
 v 1.0.7
 ----------
 * Change default for notification when swapping to engraved gear
+
 
 v 1.0.6
 ----------
