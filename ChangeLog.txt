@@ -1,3 +1,8 @@
+v 1.0.9
+----------
+* Removed extra Shadowstep entry incorrectly in Legs Slot
+
+
 v 1.0.8
 ----------
 * Now automatically dismounts when trying to change runes while mounted, rather than giving an error (unless moving or in combat)

@@ -158,7 +158,8 @@ local allSlots = {
 
 local invalidRunes = {
  [48274] = "Shadowfiend",
- [48859] = "Aspect of the Viper"
+ [48859] = "Aspect of the Viper",
+ [48164] = "Shadowstep"
 }
 
 local shownSlots = {
