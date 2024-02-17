@@ -1,3 +1,8 @@
+v 1.1.0
+----------
+* Added Labels to Rune Slot Buttons, and Option to disable or resize their text
+
+
 v 1.0.9
 ----------
 * Removed extra Shadowstep entry incorrectly in Legs Slot
