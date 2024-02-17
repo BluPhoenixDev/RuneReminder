@@ -103,7 +103,7 @@ local defaults = {
 	displayCooldownText = false,
 	tooltipAnchor = "ANCHOR_RIGHT",
 	glowTexture = "Buttons/CheckButtonHilight",
-	glowOpacity = 0.5,
+	glowOpacity = 0.3,
 	collapseRunesPanel = true,
 	engravingMode = "TOGGLE",
 	anchorPosition = "Normal",
@@ -162,7 +162,8 @@ local allSlots = {
 local invalidRunes = {
  [48274] = "Shadowfiend",
  [48859] = "Aspect of the Viper",
- [48164] = "Shadowstep"
+ [48164] = "Shadowstep",
+ [48334] = "Commanding Shout"
 }
 
 local shownSlots = {
@@ -2159,12 +2160,9 @@ function InitializeRRSettings()
 	RefreshSpellIDMap()
 	
 	for key, value in pairs(defaults) do
-		print(key.. " " .. tostring(value) )
         if RuneReminder_CurrentSettings[key] == nil then
             RuneReminder_CurrentSettings[key] = value
         end
-		print("updated")
-		print(tostring(RuneReminder_CurrentSettings[key]))
     end
 	
 	SetShownSlots()

@@ -1,6 +1,8 @@
 v 1.1.0
 ----------
 * Added Labels to Rune Slot Buttons, and Option to disable or resize their text
+* Removed Commanding Shout from Warrior Runes (is actually a skill book)
+* Adjusted default glow opacity 
 
 
 v 1.0.9
