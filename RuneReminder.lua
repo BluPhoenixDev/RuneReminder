@@ -71,6 +71,196 @@ local runeTextures = {
 ["SPELL_ARCANE_RUNE"] = "Interface/Icons/SPELL_ARCANE_RUNE",
 }
 
+local colorCodes = {
+["GREY"]="ff888888",
+["WHITE"]="ffffffff",
+["SUBWHITE"]="ffbbbbbb",
+["MAGENTA"]="ffff00ff",
+["YELLOW"]="ffffff00",
+["CYAN"]="ff00ffff",
+["LIGHTRED"]="ffff6060",
+["LIGHTBLUE"]="ff00ccff",
+["BLUE"]="ff0000ff",
+["GREEN"]="ff00ff00",
+["RED"]="ffff0000",
+["GOLD"]="ffffcc00",
+["ALICEBLUE"]="FFF0F8FF",
+["ANTIQUEWHITE"]="FFFAEBD7",
+["AQUA"]="FF00FFFF",
+["AQUAMARINE"]="FF7FFFD4",
+["AZURE"]="FFF0FFFF",
+["BEIGE"]="FFF5F5DC",
+["BISQUE"]="FFFFE4C4",
+["BLACK"]="FF000000",
+["BLANCHEDALMOND"]="FFFFEBCD",
+["BLUE"]="FF0000FF",
+["BLUEVIOLET"]="FF8A2BE2",
+["BROWN"]="FFA52A2A",
+["BURLYWOOD"]="FFDEB887",
+["CADETBLUE"]="FF5F9EA0",
+["CHARTREUSE"]="FF7FFF00",
+["CHOCOLATE"]="FFD2691E",
+["CORAL"]="FFFF7F50",
+["CORNFLOWERBLUE"]="FF6495ED",
+["CORNSILK"]="FFFFF8DC",
+["CRIMSON"]="FFDC143C",
+["CYAN"]="FF00FFFF",
+["DARKBLUE"]="FF00008B",
+["DARKCYAN"]="FF008B8B",
+["DARKGOLDENROD"]="FFB8860B",
+["DARKGRAY"]="FFA9A9A9",
+["DARKGREEN"]="FF006400",
+["DARKKHAKI"]="FFBDB76B",
+["DARKMAGENTA"]="FF8B008B",
+["DARKOLIVEGREEN"]="FF556B2F",
+["DARKORANGE"]="FFFF8C00",
+["DARKORCHID"]="FF9932CC",
+["DARKRED"]="FF8B0000",
+["DARKSALMON"]="FFE9967A",
+["DARKSEAGREEN"]="FF8FBC8B",
+["DARKSLATEBLUE"]="FF483D8B",
+["DARKSLATEGRAY"]="FF2F4F4F",
+["DARKTURQUOISE"]="FF00CED1",
+["DARKVIOLET"]="FF9400D3",
+["DEEPPINK"]="FFFF1493",
+["DEEPSKYBLUE"]="FF00BFFF",
+["DIMGRAY"]="FF696969",
+["DODGERBLUE"]="FF1E90FF",
+["FIREBRICK"]="FFB22222",
+["FLORALWHITE"]="FFFFFAF0",
+["FORESTGREEN"]="FF228B22",
+["FUCHSIA"]="FFFF00FF",
+["GAINSBORO"]="FFDCDCDC",
+["GHOSTWHITE"]="FFF8F8FF",
+["GOLD"]="FFFFD700",
+["GOLDENROD"]="FFDAA520",
+["GRAY"]="FF808080",
+["GREENYELLOW"]="FFADFF2F",
+["HONEYDEW"]="FFF0FFF0",
+["HOTPINK"]="FFFF69B4",
+["INDIANRED"]="FFCD5C5C",
+["INDIGO"]="FF4B0082",
+["IVORY"]="FFFFFFF0",
+["KHAKI"]="FFF0E68C",
+["LAVENDER"]="FFE6E6FA",
+["LAVENDERBLUSH"]="FFFFF0F5",
+["LAWNGREEN"]="FF7CFC00",
+["LEMONCHIFFON"]="FFFFFACD",
+["LIGHTCORAL"]="FFF08080",
+["LIGHTCYAN"]="FFE0FFFF",
+["LIGHTGRAY"]="FFD3D3D3",
+["LIGHTGREEN"]="FF90EE90",
+["LIGHTPINK"]="FFFFB6C1",
+["LIGHTRED"]="FFFF6060",
+["LIGHTSALMON"]="FFFFA07A",
+["LIGHTSEAGREEN"]="FF20B2AA",
+["LIGHTSKYBLUE"]="FF87CEFA",
+["LIGHTSLATEGRAY"]="FF778899",
+["LIGHTSTEELBLUE"]="FFB0C4DE",
+["LIGHTYELLOW"]="FFFFFFE0",
+["LIME"]="FF00FF00",
+["LIMEGREEN"]="FF32CD32",
+["LINEN"]="FFFAF0E6",
+["MAGENTA"]="FFFF00FF",
+["MAROON"]="FF800000",
+["MEDIUMAQUAMARINE"]="FF66CDAA",
+["MEDIUMBLUE"]="FF0000CD",
+["MEDIUMORCHID"]="FFBA55D3",
+["MEDIUMPURPLE"]="FF9370DB",
+["MEDIUMSEAGREEN"]="FF3CB371",
+["MEDIUMSLATEBLUE"]="FF7B68EE",
+["MEDIUMSPRINGGREEN"]="FF00FA9A",
+["MEDIUMTURQUOISE"]="FF48D1CC",
+["MEDIUMVIOLETRED"]="FFC71585",
+["MIDNIGHTBLUE"]="FF191970",
+["MINTCREAM"]="FFF5FFFA",
+["MISTYROSE"]="FFFFE4E1",
+["MOCCASIN"]="FFFFE4B5",
+["NAVAJOWHITE"]="FFFFDEAD",
+["NAVY"]="FF000080",
+["OLDLACE"]="FFFDF5E6",
+["OLIVE"]="FF808000",
+["OLIVEDRAB"]="FF6B8E23",
+["ORANGE"]="FFFFA500",
+["ORANGERED"]="FFFF4500",
+["ORCHID"]="FFDA70D6",
+["PALEGOLDENROD"]="FFEEE8AA",
+["PALEGREEN"]="FF98FB98",
+["PALETURQUOISE"]="FFAFEEEE",
+["PALEVIOLETRED"]="FFDB7093",
+["PAPAYAWHIP"]="FFFFEFD5",
+["PEACHPUFF"]="FFFFDAB9",
+["PERU"]="FFCD853F",
+["PINK"]="FFFFC0CB",
+["PLUM"]="FFDDA0DD",
+["POWDERBLUE"]="FFB0E0E6",
+["PURPLE"]="FF800080",
+["RED"]="FFFF0000",
+["ROSYBROWN"]="FFBC8F8F",
+["ROYALBLUE"]="FF4169E1",
+["SADDLEBROWN"]="FF8B4513",
+["SALMON"]="FFFA8072",
+["SANDYBROWN"]="FFF4A460",
+["SEAGREEN"]="FF2E8B57",
+["SEASHELL"]="FFFFF5EE",
+["SIENNA"]="FFA0522D",
+["SILVER"]="FFC0C0C0",
+["SKYBLUE"]="FF87CEEB",
+["SLATEBLUE"]="FF6A5ACD",
+["SLATEGRAY"]="FF708090",
+["SNOW"]="FFFFFAFA",
+["SPRINGGREEN"]="FF00FF7F",
+["STEELBLUE"]="FF4682B4",
+["TAN"]="FFD2B48C",
+["TEAL"]="FF008080",
+["THISTLE"]="FFD8BFD8",
+["TOMATO"]="FFFF6347",
+["TRANSPARENT"]="00FFFFFF",
+["TURQUOISE"]="FF40E0D0",
+["VIOLET"]="FFEE82EE",
+["WHEAT"]="FFF5DEB3",
+["WHITE"]="FFFFFFFF",
+["WHITESMOKE"]="FFF5F5F5",
+["YELLOWGREEN"]="FF9ACD32"
+}
+
+selectableColors = {
+["GREY"]="|cff888888Grey",
+["WHITE"]="|cffffffffWhite",
+["MAGENTA"]="|cffff00ffMagenta",
+["YELLOW"]="|cffffff00Yellow",
+["CYAN"]="|cff00ffffCyan",
+["LIGHTRED"]="|cffff6060Light Red",
+["LIGHTBLUE"]="|cff00ccffLight Blue",
+["BLUE"]="|cff0000ffBlue",
+["GREEN"]="|cff00ff00Green",
+["RED"]="|cffff0000Red",
+["GOLD"]="|cffffcc00Gold",
+["HOTPINK"]="|cFFFF69B4Hot Pink",
+["CORAL"]="|cFFFF7F50Coral",
+["ORANGERED"]="|cFFFF4500Orange Red",
+["PALEGREEN"]="|cFF98FB98Pale Green",
+["INDIGO"]="|cFF4B0082Indigo",
+["ORANGE"]="|cFFFFA500Orange",
+["STEELBLUE"]="|cFF4682B4Steel Blue",
+["CRIMSON"]="|cFFDC143CCrimson",
+["BLACK"]="|cFF000000Black",
+["IVORY"]="|cFFFFFFF0Ivory",
+["KHAKI"]="|cFFF0E68CKhaki",
+["LAVENDER"]="|cFFE6E6FALavender",
+["SILVER"]="|cFFC0C0C0Silver",
+["CHOCOLATE"]="|cFFD2691EChocolate",
+}
+
+local selectableFonts = {
+    ["FRIZQT"] = "Fonts\\FRIZQT__.TTF",
+    ["ARIALN"] = "Fonts\\ARIALN.TTF",
+    ["SKURRI"] = "Fonts\\SKURRI.TTF",
+    ["MORPHEUS"] = "Fonts\\MORPHEUS.TTF",
+	["NIMROD"] = "Fonts\\NIM_____.ttf", 
+    ["bLEI00D"] = "Fonts\\bLEI00D.TTF", 
+}
+
 local runeTextureOrder = { }
 for k in pairs(runeTextures) do
     tinsert(runeTextureOrder, k)
@@ -128,8 +318,11 @@ local defaults = {
 	hideUnknownSlots = true,
 	showSlotLabels = true,
 	showSetsLabel = false,
-	buttonLabelSize = 1.0
+	buttonLabelSize = 1.0,
+	labelColor = "GOLD",
+	labelFont = "FRIZQT"
 }
+
 
 
 
@@ -1384,6 +1577,7 @@ local function CreateSlotButtons(forcereset)
 
 	-- Define a font for cooldown text
 	local cooldownFont = "Fonts\\FRIZQT__.TTF" 
+	local labelFont = selectableFonts[RuneReminder_CurrentSettings.labelFont or "FRIZQT"]
 	local buttonSize = RuneReminder_CurrentSettings.buttonSize or 25
 	local cooldownFontSize = buttonSize/2 
 	local slotFontSize = (cooldownFontSize/2.28) * (RuneReminder_CurrentSettings.buttonLabelSize or 1.0)
@@ -1414,9 +1608,12 @@ local function CreateSlotButtons(forcereset)
 			button:SetChecked(false)
 
 			local text = button:CreateFontString(nil, "OVERLAY")
+			local color = RuneReminder_CurrentSettings.labelColor or "GOLD"
 			text:SetPoint("BOTTOM", 0, 2)
-			text:SetFont(cooldownFont, slotFontSize, "OUTLINE")
-			text:SetText(L[slotName])
+			text:SetFont(labelFont, slotFontSize, "OUTLINE")
+			text:SetText(WrapTextInColorCode(L[slotName], colorCodes[color]))
+			--text:SetTextColor()
+			--WrapTextInColorCode(text, 'cffffcc00')
 			button.text = text
 
 			if debugging then
@@ -2317,7 +2514,7 @@ local function CreateOptionsPanel()
 		if RuneReminder_CurrentSettings.buttonLabelSize ~= value then
 			RuneReminder_CurrentSettings.buttonLabelSize = value
 
-			local font = "Fonts\\FRIZQT__.TTF" 
+			local font = selectableFonts[RuneReminder_CurrentSettings.labelFont or "FRIZQT"]
 			local buttonSize = RuneReminder_CurrentSettings.buttonSize or 25
 			local cooldownFontSize = buttonSize/2 
 			local slotFontSize = (cooldownFontSize/2.28) * (RuneReminder_CurrentSettings.buttonLabelSize or 1.0)
@@ -2624,6 +2821,19 @@ local function CreateOptionsPanel()
 	
 	local buttonTextSlider = CreateSliderWithTextbox("buttonLabelSize", L["Button Text Size"], 0.0, 2.0, 0.1, 27, yOffset - 235, 175)
 	
+	local labelColorLabel = scrollChild:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
+	labelColorLabel:SetPoint("LEFT", displayRuneSlotsLabelCheckbox, "RIGHT", 300, 0)  
+	labelColorLabel:SetText(L["Label Color & Font:"])
+	
+	local labelColorDropdown = CreateFrame("Frame", "RuneReminderColorDropdown", scrollChild, "UIDropDownMenuTemplate")
+	labelColorDropdown:SetPoint("TOPLEFT", labelColorLabel, "BOTTOMLEFT", -20, 0)
+	UIDropDownMenu_SetWidth(labelColorDropdown, 150)
+	
+	
+	local labelFontDropdown = CreateFrame("Frame", "RuneReminderFontDropdown", scrollChild, "UIDropDownMenuTemplate")
+	labelFontDropdown:SetPoint("TOPLEFT", labelColorDropdown, "BOTTOMLEFT", 0, 0)
+	UIDropDownMenu_SetWidth(labelFontDropdown, 150)
+	
 	local enableCheckedCheckbox = CreateCheckbox("enableChecked", "left", yOffset - 280, L["Set Checked State"], L["Enables the Checked state, which gives an alternate glow effect. This effect can be stylized in Masque."] .. "\n\n" .. L["NOTE: The Checked state will overlap with the custom Glow texture. Most users will not want both enabled together."])
 	local disableGlowCheckbox = CreateCheckbox("disableGlow", "right", yOffset - 280, L["Disable Engraved Glow"], L["Removes the custom glow texture on engraved rune slots."] .. "\n\n" .. L["NOTE: The Checked state will overlap with this. Most users will not want both enabled together."])
 
@@ -2745,6 +2955,47 @@ local function CreateOptionsPanel()
 	
 	UIDropDownMenu_SetWidth(glowTextureDropdown, 150)
 	
+	local function OnColorSelected(self, arg1, arg2, checked)
+		RuneReminder_CurrentSettings.labelColor = arg1
+		CloseDropDownMenus() 
+		UIDropDownMenu_SetText(labelColorDropdown, selectableColors[arg1]) 
+		ResetAllButtons()
+	end
+
+	local function ColorDropdown_Init(self, level)
+		for key, colorName in pairs(selectableColors) do
+			local info = UIDropDownMenu_CreateInfo()
+			info.text = colorName
+			info.arg1 = key
+			info.func = OnColorSelected
+			info.checked = (RuneReminder_CurrentSettings.labelColor == key)
+			UIDropDownMenu_AddButton(info, level)
+		end
+	end
+	UIDropDownMenu_Initialize(labelColorDropdown, ColorDropdown_Init)
+	UIDropDownMenu_SetText(labelColorDropdown, selectableColors[RuneReminder_CurrentSettings.labelColor or "WHITE"]) -- Default to "WHITE" or current setting
+	
+	local function OnFontSelected(self, arg1, arg2, checked)
+		RuneReminder_CurrentSettings.labelFont = arg1 
+		CloseDropDownMenus() 
+		UIDropDownMenu_SetText(labelFontDropdown, arg1)
+		ResetAllButtons()
+	end
+
+	local function FontDropdown_Init(self, level)
+		for key, fontPath in pairs(selectableFonts) do
+			local info = UIDropDownMenu_CreateInfo()
+			info.text = key -- Ideally, use friendly names here
+			info.arg1 = key
+			info.func = OnFontSelected
+			info.checked = (RuneReminder_CurrentSettings.labelFont == key)
+			UIDropDownMenu_AddButton(info, level)
+		end
+	end
+	
+
+	UIDropDownMenu_Initialize(labelFontDropdown, FontDropdown_Init)
+	UIDropDownMenu_SetText(labelFontDropdown, RuneReminder_CurrentSettings.selectedFont or "FRIZQT") 
 	
 	runeTextureDropdown.initialize = function(self, level)
 		if not self.IsInitialized then

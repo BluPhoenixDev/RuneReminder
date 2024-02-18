@@ -279,3 +279,4 @@ L["Sets"] = true
 L["Button Text Size"] = true
 L["Display Rune Slots Text Labels"] = true
 L["Display the Rune Slot Button Labels."] = true
+L["Label Color & Font:"] = true
