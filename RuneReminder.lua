@@ -282,7 +282,7 @@ local defaults = {
     yOffset = 0,
 	runeAlignment = "Horizontal",
 	runeDirection = "Standard",
-	disableGlow = false,
+	disableGlow = true,
 	enableChecked = false,
 	keepOpen = false,
 	disableSwapNotify = true,
@@ -319,11 +319,9 @@ local defaults = {
 	showSlotLabels = true,
 	showSetsLabel = false,
 	buttonLabelSize = 1.0,
-	labelColor = "GOLD",
+	labelColor = "WHITE",
 	labelFont = "FRIZQT"
 }
-
-
 
 
 local validSlots = {
@@ -3500,9 +3498,6 @@ local function CreateOptionsPanel()
     function panel:UpdateControls()
         enabledCheckbox:SetChecked(RuneReminder_CurrentSettings.enabled)
         soundCheckbox:SetChecked(RuneReminder_CurrentSettings.soundNotification)
-        --handsCheckbox:SetChecked(RuneReminder_CurrentSettings.handsNotification)
-        --chestCheckbox:SetChecked(RuneReminder_CurrentSettings.chestNotification)
-        --legsCheckbox:SetChecked(RuneReminder_CurrentSettings.legsNotification)
         hideReapplyButtonCheckbox:SetChecked(RuneReminder_CurrentSettings.hideReapplyButton)
         hideViewRunesButtonCheckbox:SetChecked(RuneReminder_CurrentSettings.hideViewRunesButton)
         displayRunesCheckbox:SetChecked(RuneReminder_CurrentSettings.displayRunes)
@@ -4475,7 +4470,6 @@ frame:RegisterEvent("RUNE_UPDATED")
 frame:RegisterEvent("NEW_RECIPE_LEARNED")
 frame:RegisterEvent("SPELL_UPDATE_COOLDOWN")
 frame:RegisterEvent("SPELL_UPDATE_USABLE")
---frame:RegisterEvent("UNIT_SPELLCAST_SENT")
 frame:SetScript("OnEvent", OnEvent)
 
 frame:SetMovable(true)
