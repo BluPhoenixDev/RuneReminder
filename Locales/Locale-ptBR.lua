@@ -280,3 +280,5 @@ L["Button Text Size"] = "Tamanho do Texto do Botão"
 L["Display Rune Slots Text Labels"] = "Mostrar Rutulos de Texto do Espaços de Runas"
 L["Display the Rune Slot Button Labels."] = "Mostrar os Rutulos de Botão do Espaços de Runas."
 L["Label Color & Font:"] = "Cor e fonte da etiqueta:"
+L["Display Chat Messages When Equipment Changes"] = true
+L["Toggles display of chat messages for rune updates when your equipment changes."] = true

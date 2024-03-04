@@ -279,3 +279,5 @@ L["Button Text Size"] = true
 L["Display Rune Slots Text Labels"] = true
 L["Display the Rune Slot Button Labels."] = true
 L["Label Color & Font:"] = true
+L["Display Chat Messages When Equipment Changes"] = true
+L["Toggles display of chat messages for rune updates when your equipment changes."] = true

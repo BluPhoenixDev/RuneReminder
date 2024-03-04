@@ -320,7 +320,8 @@ local defaults = {
 	showSetsLabel = false,
 	buttonLabelSize = 1.0,
 	labelColor = "WHITE",
-	labelFont = "FRIZQT"
+	labelFont = "FRIZQT",
+	equipmentChatMessages = true
 }
 
 
@@ -2775,6 +2776,7 @@ local function CreateOptionsPanel()
 	local hideReapplyButtonCheckbox = CreateCheckbox("hideReapplyButton", "left", yOffset - 30, L["Hide Re-Apply Button"], L["Toggle the visibility of the Re-Apply Rune button in popups."])
 	local hideViewRunesButtonCheckbox = CreateCheckbox("hideViewRunesButton", "left", yOffset - 60, L["Hide View Runes Button"], L["Toggle the visibility of the View Runes button in popups."])
 	local disableSwapCheckbox = CreateCheckbox("disableSwapNotify", "left", yOffset - 90, L["Disable when swapping to engraved gear"], L["Disable popup notification when equipping engraved gear."])
+	local enableGearSwapMessages = CreateCheckbox("equipmentChatMessages", "right", yOffset - 90, L["Display Chat Messages When Equipment Changes"], L["Toggles display of chat messages for rune updates when your equipment changes."])
 	local disableRemoveCheckbox = CreateCheckbox("disableRemoveNotify", "left", yOffset - 120, L["Disable when removing gear"], L["Disable popup notification when removing gear (without a new piece replacing it)"])
 
 	-- Right Column
@@ -3511,6 +3513,7 @@ local function CreateOptionsPanel()
         buttonSizeSlider:SetValue(RuneReminder_CurrentSettings.buttonSize or 25)
 		paddingSlider:SetValue(RuneReminder_CurrentSettings.buttonPadding or 1)
 		disableSwapCheckbox:SetChecked(RuneReminder_CurrentSettings.disableSwapNotify or false)
+		enableGearSwapMessages:SetChecked(RuneReminder_CurrentSettings.equipmentChatMessages or true)
 		disableRemoveCheckbox:SetChecked(RuneReminder_CurrentSettings.disableRemoveNotify or false)
 		disableLeftClickCheckbox:SetChecked(RuneReminder_CurrentSettings.disableLeftClickKeepOpen or false)
 		autoToggleOnHoverCheckbox:SetChecked(RuneReminder_CurrentSettings.autoToggleOnHover or false)
@@ -4323,7 +4326,7 @@ local function OnEvent(self, event, ...)
 		InitializeRRSettings()
     elseif event == "PLAYER_EQUIPMENT_CHANGED" then
         -- Actions when the player's equipment changes
-        UpdateRunes(true, true)
+        UpdateRunes(true, RuneReminder_CurrentSettings.equipmentChatMessages)
 		if RuneReminder_CurrentSettings.soundNotification then 
 			PlaySound(8959)
 		end

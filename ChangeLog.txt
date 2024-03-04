@@ -1,3 +1,8 @@
+v 1.1.3
+----------
+* Added option to disable chat messages when swapping equipment
+
+
 v 1.1.2
 ----------
 * Adjusted defaults & minor cleanup
