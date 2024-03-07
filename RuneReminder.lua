@@ -10,8 +10,9 @@ local characterID = nil
 local RuneSetsButton = nil
 local RuneSetsDropdownMenu = nil
 local currentProfile = nil
+local initialized = false
 
-local CreateRuneButton, CreateOrUpdateRuneSelectionButtons, RefreshRuneSelectionButtons, toggleKeepOpen, UpdateButtonBehaviors, ApplyRuneSet, LoadRuneSet, UpdateRuneSetsButtonState, SaveRuneSet, ResetAllButtons, InitializeRRSettings, SetShownSlots, UpdateRunes
+local CreateRuneButton, CreateOrUpdateRuneSelectionButtons, RefreshRuneSelectionButtons, toggleKeepOpen, UpdateButtonBehaviors, ApplyRuneSet, LoadRuneSet, UpdateRuneSetsButtonState, SaveRuneSet, ResetAllButtons, InitializeRRSettings, SetShownSlots, UpdateRunes, ClickRune
 local UpdateSettingsFromProfile, SaveProfile, ApplyProfile, ResetSettings, ShowResetSettingsConfirmation, InitializeCharacterSettings, LoadProfileSettings, UpdateActiveProfileSettings
 local ResetSettingsToDefault, DeleteProfile, OnSettingChanged
 local Masque, MSQ_Version = LibStub("Masque", true)
@@ -321,7 +322,9 @@ local defaults = {
 	buttonLabelSize = 1.0,
 	labelColor = "WHITE",
 	labelFont = "FRIZQT",
-	equipmentChatMessages = true
+	equipmentChatMessages = true,
+	quickEngraveOnRightClick = true,
+	showChangeLog = true
 }
 
 
@@ -405,6 +408,95 @@ local function sortedPairs(t, sort)
 			return keys[i], t[keys[i]]
 		end
 	end
+end
+
+-- Function to create the changelog frame
+local function CreateChangelogFrame()
+    if not RuneReminderChangelogFrame then
+        local frame = CreateFrame("Frame", "RuneReminderChangelogFrame", UIParent, "BasicFrameTemplateWithInset")
+        frame:SetSize(500, 400) 
+        frame:SetPoint("CENTER") 
+        frame:SetMovable(true)
+        frame:EnableMouse(true)
+        frame:SetScript("OnMouseDown", function(self) self:StartMoving() end)
+        frame:SetScript("OnMouseUp", function(self) self:StopMovingOrSizing() end)
+        frame.TitleText:SetText("|cff2da3cf[Rune Reminder] |cffffffffChange Log|r") 
+        frame:Hide() -- Initially hidden
+
+        local scrollArea = CreateFrame("ScrollFrame", nil, frame, "UIPanelScrollFrameTemplate")
+        scrollArea:SetPoint("TOPLEFT", frame.InsetBg, "TOPLEFT", 10, -10)
+        scrollArea:SetPoint("BOTTOMRIGHT", frame.InsetBg, "BOTTOMRIGHT", -30, 10)
+
+        local editBox = CreateFrame("EditBox", nil, scrollArea)
+        editBox:SetMultiLine(true)
+        editBox:SetFontObject("ChatFontNormal")
+        editBox:EnableMouseWheel(true)
+        editBox:SetWidth(scrollArea:GetWidth() - 40)
+        editBox:SetHeight(200) 
+        editBox:SetAutoFocus(false)
+        editBox:SetScript("OnEscapePressed", function() frame:Hide() end)
+
+        scrollArea:SetScrollChild(editBox)
+
+        return frame, editBox
+    else
+        return RuneReminderChangelogFrame
+    end
+end
+
+-- Function to show the changelog
+local function ShowChangeLog()
+    local frame, editBox = CreateChangelogFrame()  -- Assuming this function creates and returns UI elements correctly
+    local lastSeenVersion = LastViewedChangelogVersion or nil
+    local currentVersion = GetAddOnMetadata("RuneReminder", "Version")
+    local versionsToShow = {}
+
+    -- Ensure RuneReminder_ChangeLog table is initialized
+    if not RuneReminder_ChangeLog then RuneReminder_ChangeLog = {} end
+
+    -- Collect all versions
+    for version, _ in pairs(RuneReminder_ChangeLog) do
+        table.insert(versionsToShow, version)
+    end
+
+    -- Sort versions in descending order 
+    table.sort(versionsToShow, function(a, b)
+        local majorA, minorA, patchA = a:match("(%d+)%.(%d+)%.(%d+)")
+        local majorB, minorB, patchB = b:match("(%d+)%.(%d+)%.(%d+)")
+        majorA, minorA, patchA = tonumber(majorA), tonumber(minorA), tonumber(patchA)
+        majorB, minorB, patchB = tonumber(majorB), tonumber(minorB), tonumber(patchB)
+
+        if majorA ~= majorB then return majorA > majorB
+        elseif minorA ~= minorB then return minorA > minorB
+        else return patchA > patchB end
+    end)
+
+    -- Check if current version is newer than the last seen version
+    if currentVersion ~= lastSeenVersion then
+        -- Construct the changelog text for all versions
+        local changelogText = ""
+        for _, version in ipairs(versionsToShow) do
+            local entry = RuneReminder_ChangeLog[version]
+            changelogText = changelogText .. "|cff2da3cfVersion " .. version .. " - " .. entry.date .. "|r\n"
+            for _, change in ipairs(entry.changes) do
+                changelogText = changelogText .. "- " .. change .. "\n"
+            end
+            changelogText = changelogText .. "\n" -- Add spacing
+        end
+
+        -- Show changelog if there's content
+        if changelogText ~= "" then
+            editBox:SetText(changelogText)
+            frame:Show()
+            LastViewedChangelogVersion = currentVersion  -- Update the last seen version to the current version
+        end
+    end
+end
+
+
+local function initEngravingPanel()
+	hooksecurefunc("EngravingFrameSpell_OnClick", ClickRune)
+	initialized = true
 end
 
 local function initFrame(reset) 
@@ -713,6 +805,20 @@ end
 		setRunesPanelVisibility()
 	end)
 
+function ClickRune(e, mousebutton)
+  if RuneReminder_CurrentSettings.quickEngraveOnRightClick and mousebutton == "RightButton" then
+    local rune = C_Engraving.GetCurrentRuneCast()
+	
+    if rune and rune.equipmentSlot then
+      PickupInventoryItem(rune.equipmentSlot)
+		ReplaceEnchant()
+		StaticPopup_Hide("REPLACE_ENCHANT")
+		
+		ClearCursor()
+      ClearCursor()
+    end
+  end
+end
 
 function toggleKeepOpen()
 	-- Grab the alternate value and update settings/options
@@ -2776,11 +2882,13 @@ local function CreateOptionsPanel()
 	local hideReapplyButtonCheckbox = CreateCheckbox("hideReapplyButton", "left", yOffset - 30, L["Hide Re-Apply Button"], L["Toggle the visibility of the Re-Apply Rune button in popups."])
 	local hideViewRunesButtonCheckbox = CreateCheckbox("hideViewRunesButton", "left", yOffset - 60, L["Hide View Runes Button"], L["Toggle the visibility of the View Runes button in popups."])
 	local disableSwapCheckbox = CreateCheckbox("disableSwapNotify", "left", yOffset - 90, L["Disable when swapping to engraved gear"], L["Disable popup notification when equipping engraved gear."])
-	local enableGearSwapMessages = CreateCheckbox("equipmentChatMessages", "right", yOffset - 90, L["Display Chat Messages When Equipment Changes"], L["Toggles display of chat messages for rune updates when your equipment changes."])
+	local enableGearSwapMessages = CreateCheckbox("equipmentChatMessages", "right", yOffset - 120, L["Display Chat Messages When Equipment Changes"], L["Toggles display of chat messages for rune updates when your equipment changes."])
 	local disableRemoveCheckbox = CreateCheckbox("disableRemoveNotify", "left", yOffset - 120, L["Disable when removing gear"], L["Disable popup notification when removing gear (without a new piece replacing it)"])
 
 	-- Right Column
-	local soundCheckbox = CreateCheckbox("soundNotification", "right", yOffset - 30, L["Enable Sound Notifications"], L["Toggle sound notifications for rune changes."])
+	local changeLogCheckbox = CreateCheckbox("showChangeLog", "right", yOffset - 30, L["Show ChangeLog on Update"], L["Display ChangeLog after updates."])
+	local rightEngraveCheckbox = CreateCheckbox("quickEngraveOnRightClick", "right", yOffset - 60, L["Right Click Engraving Panel to Quick Engrave"], L["With this option, right clicking a rune in the Character Engraving Panel will automatically select the appropriate slot and begin engraving."])
+	local soundCheckbox = CreateCheckbox("soundNotification", "right", yOffset - 90, L["Enable Sound Notifications"], L["Toggle sound notifications for rune changes."])
 
 
 	-- Runes Widget Options (Label)
@@ -3269,7 +3377,15 @@ local function CreateOptionsPanel()
 		UpdateActiveProfileSettings()
 	end)
 
+	rightEngraveCheckbox:SetScript("OnClick", function(self)
+		RuneReminder_CurrentSettings.quickEngraveOnRightClick = self:GetChecked()
+		UpdateActiveProfileSettings()
+	end)
 	
+	changeLogCheckbox:SetScript("OnClick", function(self)
+		RuneReminder_CurrentSettings.showChangeLog = self:GetChecked()
+		UpdateActiveProfileSettings()
+	end)
 	
 	rotateRunesCheckbox:SetScript("OnClick", function(self)
         RuneReminder_CurrentSettings.runeAlignment = self:GetChecked() and "Vertical" or "Horizontal"
@@ -3500,6 +3616,7 @@ local function CreateOptionsPanel()
     function panel:UpdateControls()
         enabledCheckbox:SetChecked(RuneReminder_CurrentSettings.enabled)
         soundCheckbox:SetChecked(RuneReminder_CurrentSettings.soundNotification)
+		rightEngraveCheckbox:SetChecked(RuneReminder_CurrentSettings.quickEngraveOnRightClick)
         hideReapplyButtonCheckbox:SetChecked(RuneReminder_CurrentSettings.hideReapplyButton)
         hideViewRunesButtonCheckbox:SetChecked(RuneReminder_CurrentSettings.hideViewRunesButton)
         displayRunesCheckbox:SetChecked(RuneReminder_CurrentSettings.displayRunes)
@@ -4283,12 +4400,14 @@ end
 -- Event Handler Function
 local function OnEvent(self, event, ...)
 	if debugging then
-	print("-----EVENT:"..event)
+		print("-----EVENT:"..event)
 	end
-	
+    if C_AddOns.IsAddOnLoaded("Blizzard_EngravingUI") and not initialized and not InCombatLockdown() then
+      initEngravingPanel()
+    end
     if event == "ADDON_LOADED" and ... == addonName then
-		C_Timer.After(2,function()
 
+		C_Timer.After(2,function()
 		if Masque and not group then
 			group = Masque:Group("RuneReminder", "RuneWidget")
 		end
@@ -4318,6 +4437,12 @@ local function OnEvent(self, event, ...)
 				
 			end)
 			
+	    -- Wait until the player is fully logged in to show the changelog
+		C_Timer.After(2, function()
+		if RuneReminder_CurrentSettings.showChangeLog and (not LastViewedChangelogVersion or LastViewedChangelogVersion ~= version) then
+				ShowChangeLog()
+			end
+		end)
         end)
 	elseif event == "VARIABLES_LOADED" then
 		--InitializeCharacterSettings()
@@ -4410,7 +4535,6 @@ local function OnEvent(self, event, ...)
 		if PaperDollFrame:IsVisible() and RuneReminder_CurrentSettings.engravingMode == "TOGGLE"  then
 			RuneReminder_CurrentSettings.collapseRunesPanel = not emode	
 		end
-		
     elseif event == "RUNE_UPDATED" then
         -- Actions when a rune is updated
 		local rune = ...
@@ -4622,5 +4746,3 @@ StaticPopupDialogs["CONFIRM_DELETE_SETTINGS"] = {
     hideOnEscape = true,
     preferredIndex = 3,
 }
-
-

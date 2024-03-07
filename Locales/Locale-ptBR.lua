@@ -282,3 +282,7 @@ L["Display the Rune Slot Button Labels."] = "Mostrar os Rutulos de Botão do Esp
 L["Label Color & Font:"] = "Cor e fonte da etiqueta:"
 L["Display Chat Messages When Equipment Changes"] = true
 L["Toggles display of chat messages for rune updates when your equipment changes."] = true
+L["Right Click Engraving Panel to Quick Engrave"] = true
+L["With this option, right clicking a rune in the Character Engraving Panel will automatically select the appropriate slot and begin engraving."] = true
+L["Show ChangeLog on Update"] = true
+L["Display ChangeLog after updates."] = true
